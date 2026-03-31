@@ -70,7 +70,8 @@ async def cb_format(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(format=fmt)
     await db.upsert_user(callback.from_user.id, format=fmt)
 
-    await callback.message.edit_text(
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(
         t(lang, "triage_prompt"),
         reply_markup=triage_keyboard(lang),
         parse_mode="Markdown",

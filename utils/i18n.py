@@ -21,7 +21,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Якщо є небезпека — зверніться зараз:\n"
             "🇺🇦 Гаряча лінія: *0 800 505 201* (безкоштовно)\n"
             "🇨🇿 Linka bezpečí: *116 111*\n"
-            "🆘 Екстрена: *112*"
+            "🆘 Екстрена: *112*\n\n"
+            "_Для запису до спеціаліста надішліть /start_"
         ),
         "slots_header": "📅 Доступні слоти (сесія 45 хв):",
         "slot_booked": "✅ Сесію заброньовано! Спеціаліст зв'яжеться для підтвердження.",
@@ -59,7 +60,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Если есть угроза жизни — обратитесь сейчас:\n"
             "🇷🇺 Телефон доверия: *8-800-2000-122* (бесплатно)\n"
             "🇨🇿 Linka bezpečí: *116 111*\n"
-            "🆘 Экстренная: *112*"
+            "🆘 Экстренная: *112*\n\n"
+            "_Для записи к специалисту отправьте /start_"
         ),
         "slots_header": "📅 Доступные слоты (сессия 45 мин):",
         "slot_booked": "✅ Сессия забронирована! Специалист свяжется для подтверждения.",
@@ -97,7 +99,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "Pokud hrozí nebezpečí:\n"
             "🇨🇿 Linka bezpečí: *116 111*\n"
             "🇨🇿 Linka první pomoci: *116 123*\n"
-            "🆘 Záchranná: *112*"
+            "🆘 Záchranná: *112*\n\n"
+            "_Pro objednání ke specialistovi napište /start_"
         ),
         "slots_header": "📅 Dostupné termíny (sezení 45 min):",
         "slot_booked": "✅ Termín zarezervován! Specialista vás kontaktuje.",
@@ -135,7 +138,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "If your life is in danger, reach out now:\n"
             "🇨🇿 Linka bezpečí: *116 111*\n"
             "🇨🇿 Crisis line: *116 123*\n"
-            "🆘 Emergency: *112*"
+            "🆘 Emergency: *112*\n\n"
+            "_To book a session with a specialist, send /start_"
         ),
         "slots_header": "📅 Available slots (45-min session):",
         "slot_booked": "✅ Session booked! The specialist will contact you to confirm.",
