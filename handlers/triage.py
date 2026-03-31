@@ -67,6 +67,13 @@ async def cb_category(callback: CallbackQuery, state: FSMContext) -> None:
     category = callback.data
     triage_level = CATEGORY_TRIAGE[category]
 
+    category_labels = {
+        "cat_crisis":  {"UA": "🆘 Криза",        "RU": "🆘 Кризис",       "CZ": "🆘 Krize",       "EN": "🆘 Crisis"},
+        "cat_consult": {"UA": "💬 Консультація", "RU": "💬 Консультация", "CZ": "💬 Konzultace", "EN": "💬 Consultation"},
+        "cat_ikp":     {"UA": "🤝 Допомога / ІКП","RU": "🤝 Помощь / ИКП","CZ": "🤝 Pomoc / IKP","EN": "🤝 Assistance / IKP"},
+    }
+    description = category_labels.get(category, {}).get(lang, category)
+
     await callback.message.edit_reply_markup(reply_markup=None)
     await _handle_triage_result(
         telegram_id=callback.from_user.id,
@@ -74,7 +81,7 @@ async def cb_category(callback: CallbackQuery, state: FSMContext) -> None:
         lang=lang,
         triage_level=triage_level,
         category=category,
-        description="[button]",
+        description=description,
         answer_fn=lambda text, **kw: callback.message.answer(text, **kw),
         state=state,
     )
