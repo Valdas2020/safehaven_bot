@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 
 import database as db
 from services.calendar import create_calendar_event
@@ -61,3 +61,17 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         "Slot booked | user_id=%s specialist=%s start=%s event_id=%s",
         db_user_id, specialist_id, start, event_id,
     )
+
+
+@router.message(UserFlow.slot_selection)
+async def msg_slot_hint(message: Message, state: FSMContext) -> None:
+    """User typed text instead of pressing a slot button — remind them."""
+    data = await state.get_data()
+    lang = data.get("lang", "EN")
+    hint = {
+        "UA": "👆 Будь ласка, оберіть слот кнопкою вище або натисніть «Передзвоніть мені».",
+        "RU": "👆 Пожалуйста, выберите слот кнопкой выше или нажмите «Перезвоните мне».",
+        "CZ": "👆 Prosím vyberte termín tlačítkem výše nebo zvolte «Zavolejte mi zpět».",
+        "EN": "👆 Please select a slot using the buttons above, or tap «Please call me back».",
+    }.get(lang, "👆 Please use the buttons above to select a slot.")
+    await message.answer(hint)
