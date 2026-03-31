@@ -26,19 +26,14 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 # Fill in real calendar IDs before deploying.
 SPECIALISTS: dict[str, dict] = {
     "sp_01": {
-        "calendar_id": "specialist1@example.com",
-        "language": "UA",
-        "specialization": "Психолог / Психотерапевт",
-    },
-    "sp_02": {
-        "calendar_id": "specialist2@example.com",
-        "language": "RU",
-        "specialization": "Кризисный консультант",
-    },
-    "sp_03": {
-        "calendar_id": "specialist3@example.com",
+        "calendar_id": "narowski@amiga-migrant.cz",
         "language": "CZ",
         "specialization": "Psycholog / IKP",
+    },
+    "sp_02": {
+        "calendar_id": "yurkevich@amiga-migrant.cz",
+        "language": "UA",
+        "specialization": "Психолог / Психотерапевт",
     },
 }
 
