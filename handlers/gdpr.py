@@ -35,7 +35,7 @@ async def cb_gdpr_accept(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data["lang"]
 
-    await db.upsert_user(callback.from_user.id, gdpr_accepted=1)
+    await db.upsert_user(callback.from_user.id, gdpr_accepted=True)
 
     await callback.message.edit_text(t(lang, "intake_name"), parse_mode="Markdown")
     await state.set_state(UserFlow.intake_name)
