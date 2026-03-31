@@ -1,0 +1,63 @@
+import logging
+from datetime import datetime, timezone
+
+from aiogram import F, Router
+from aiogram.fsm.context import FSMContext
+from aiogram.types import CallbackQuery
+
+import database as db
+from services.calendar import create_calendar_event
+from states.user_states import UserFlow
+from utils.i18n import t
+
+logger = logging.getLogger(__name__)
+router = Router(name="booking")
+
+
+@router.callback_query(UserFlow.slot_selection, F.data == "slot_callback")
+async def cb_callback_request(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+    db_user_id = data["db_user_id"]
+
+    await db.set_callback_requested(db_user_id)
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(t(lang, "callback_saved"))
+    await state.clear()
+    await callback.answer()
+    logger.info("Callback requested | user_id=%s", db_user_id)
+
+
+@router.callback_query(UserFlow.slot_selection, F.data.startswith("slot_"))
+async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+    db_user_id = data["db_user_id"]
+    name = data.get("name", "User")
+    slots_raw: list[dict] = data.get("slots", [])
+
+    try:
+        idx = int(callback.data.split("_", 1)[1])
+        chosen = slots_raw[idx]
+    except (ValueError, IndexError):
+        await callback.answer("Invalid slot", show_alert=True)
+        return
+
+    start = datetime.fromisoformat(chosen["start"]).replace(tzinfo=timezone.utc)
+    end   = datetime.fromisoformat(chosen["end"]).replace(tzinfo=timezone.utc)
+    specialist_id = chosen["specialist_id"]
+
+    # Create Google Calendar event
+    event_id = create_calendar_event(specialist_id, name, start, end)
+
+    # Save booking to DB
+    await db.create_booking(db_user_id, specialist_id, start, end, event_id)
+
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(t(lang, "slot_booked"))
+    await state.clear()
+    await callback.answer()
+    logger.info(
+        "Slot booked | user_id=%s specialist=%s start=%s event_id=%s",
+        db_user_id, specialist_id, start, event_id,
+    )
