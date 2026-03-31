@@ -47,8 +47,8 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     end   = datetime.fromisoformat(chosen["end"]).replace(tzinfo=timezone.utc)
     specialist_id = chosen["specialist_id"]
 
-    # Create Google Calendar event
-    event_id = create_calendar_event(specialist_id, name, start, end)
+    # Create Google Calendar event (uses telegram_id for privacy, not name)
+    event_id = create_calendar_event(specialist_id, callback.from_user.id, start, end)
 
     # Save booking to DB
     await db.create_booking(db_user_id, specialist_id, start, end, event_id)

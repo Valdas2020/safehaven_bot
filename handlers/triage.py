@@ -33,8 +33,10 @@ async def _handle_triage_result(
         await state.clear()
         return
 
-    # Normal flow → fetch slots
-    slots = await get_free_slots(lang)
+    # Normal flow → fetch slots matched to user profile
+    fsm_data = await state.get_data()
+    age_cat = fsm_data.get("age_cat", "adult")
+    slots = await get_free_slots(lang, age_cat=age_cat, triage_level=triage_level)
     if not slots:
         await answer_fn(t(lang, "no_slots"))
         await state.clear()
