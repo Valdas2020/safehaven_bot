@@ -6,7 +6,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 import database as db
-from services.calendar import create_calendar_event
+from services.calendar import SPECIALISTS, create_calendar_event
+from services.mailer import notify_specialist
 from states.user_states import UserFlow
 from utils.i18n import t
 
@@ -52,6 +53,18 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
 
     # Save booking to DB
     await db.create_booking(db_user_id, specialist_id, start, end, event_id)
+
+    # Send email notification to specialist
+    sp = SPECIALISTS.get(specialist_id, {})
+    description = data.get("triage_description", "—")
+    await notify_specialist(
+        specialist_email=sp.get("email", sp.get("calendar_id", "")),
+        specialist_name=sp.get("name", specialist_id),
+        client_name=data.get("name", "—"),
+        client_description=description,
+        start=start,
+        end=end,
+    )
 
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(t(lang, "slot_booked"))

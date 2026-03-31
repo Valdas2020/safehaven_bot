@@ -42,10 +42,13 @@ async def _handle_triage_result(
         await state.clear()
         return
 
-    await state.update_data(slots=[
-        {"specialist_id": s.specialist_id, "start": s.start.isoformat(), "end": s.end.isoformat()}
-        for s in slots
-    ])
+    await state.update_data(
+        triage_description=description,
+        slots=[
+            {"specialist_id": s.specialist_id, "start": s.start.isoformat(), "end": s.end.isoformat()}
+            for s in slots
+        ],
+    )
     await answer_fn(
         t(lang, "slots_header"),
         reply_markup=slots_keyboard(slots, lang),

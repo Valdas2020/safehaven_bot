@@ -33,6 +33,7 @@ PRAGUE_TZ = ZoneInfo("Europe/Prague")
 SPECIALISTS: dict[str, dict] = {
     "psych_adult_1": {
         "calendar_id": "ralph.drogheda@gmail.com",          # ← must share with service account
+        "email": "ralph.drogheda@gmail.com",                # ← booking notification address
         "name": "Psychologist (Adults)",
         "type": "psychologist",
         "age_group": ["adult"],
@@ -41,6 +42,7 @@ SPECIALISTS: dict[str, dict] = {
     },
     "psych_adult_crisis": {
         "calendar_id": "timbookedtwo2@gmail.com",           # ← must share with service account
+        "email": "timbookedtwo2@gmail.com",                 # ← booking notification address
         "name": "Psychologist (Adults — Crisis)",
         "type": "psychologist",
         "age_group": ["adult"],
@@ -49,6 +51,7 @@ SPECIALISTS: dict[str, dict] = {
     },
     "psych_children": {
         "calendar_id": "yurkevichirina@gmail.com",          # ← must share with service account
+        "email": "yurkevichirina@gmail.com",                # ← booking notification address
         "name": "Psychologist (Children)",
         "type": "psychologist",
         "age_group": ["child"],

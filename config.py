@@ -20,6 +20,12 @@ DATABASE_URL: str = os.getenv("DATABASE_URL", "")  # postgresql+asyncpg://...
 # Google Calendar
 GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
 
+# SMTP (for specialist email notifications)
+SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
+SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
+SMTP_USER: str = os.getenv("SMTP_USER", "")   # sender address
+SMTP_PASS: str = os.getenv("SMTP_PASS", "")   # app password
+
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 if not WEBHOOK_HOST:
