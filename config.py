@@ -5,8 +5,8 @@ load_dotenv()
 
 # Telegram
 BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
-WEBHOOK_SECRET: str = os.getenv("WEBHOOK_SECRET", "dumka-secret")
-WEBHOOK_HOST: str = os.getenv("WEBHOOK_HOST", "")  # e.g. https://dumka.onrender.com
+WEBHOOK_SECRET: str = os.getenv("WEBHOOK_SECRET", "safehaven-secret")
+WEBHOOK_HOST: str = os.getenv("WEBHOOK_HOST", "")  # e.g. https://safehaven-bot.onrender.com
 WEBHOOK_PATH: str = "/webhook"
 WEBHOOK_URL: str = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 

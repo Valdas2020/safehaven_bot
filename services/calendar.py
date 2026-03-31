@@ -162,7 +162,7 @@ def create_calendar_event(
         service = _build_service()
         sp = SPECIALISTS[specialist_id]
         event = {
-            "summary": f"DUMKA — {user_name}",
+            "summary": f"SafeHaven — {user_name}",
             "description": "Сессия 45 мин + 15 мин буфер. Забронировано через бот.",
             "start": {"dateTime": start.isoformat(), "timeZone": "UTC"},
             "end":   {"dateTime": end.isoformat(),   "timeZone": "UTC"},

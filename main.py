@@ -1,5 +1,5 @@
 """
-DUMKA — Mental Health Support Telegram Bot
+SafeHaven — Mental Health Support Telegram Bot
 Webhook mode via FastAPI + aiogram 3.x
 """
 import asyncio
