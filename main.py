@@ -15,7 +15,7 @@ from fastapi import FastAPI, Request, Response
 
 import database as db
 from config import BOT_TOKEN, HOST, PORT, WEBHOOK_PATH, WEBHOOK_SECRET, WEBHOOK_URL
-from handlers import booking, gdpr, intake, start, triage
+from handlers import booking, fallback, gdpr, intake, start, triage
 from middlewares.logging_mw import LoggingMiddleware
 
 logging.basicConfig(
@@ -39,6 +39,7 @@ dp.include_router(gdpr.router)
 dp.include_router(intake.router)
 dp.include_router(triage.router)
 dp.include_router(booking.router)
+dp.include_router(fallback.router)  # must be last
 
 
 # ── FastAPI app ───────────────────────────────────────────────────────────────
