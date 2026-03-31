@@ -2,7 +2,6 @@
 SafeHaven — Mental Health Support Telegram Bot
 Webhook mode via FastAPI + aiogram 3.x
 """
-import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -10,8 +9,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.webhook.aiohttp_server import SimpleRequestHandler
-from aiogram.webhook.aiohttp_server import setup_application
+from aiogram.types import Update
 import uvicorn
 from fastapi import FastAPI, Request, Response
 
@@ -29,29 +27,24 @@ logger = logging.getLogger(__name__)
 
 # ── Bot & Dispatcher ──────────────────────────────────────────────────────────
 
-def build_dispatcher() -> Dispatcher:
-    dp = Dispatcher(storage=MemoryStorage())
-    dp.update.outer_middleware(LoggingMiddleware())
-    dp.include_router(start.router)
-    dp.include_router(gdpr.router)
-    dp.include_router(intake.router)
-    dp.include_router(triage.router)
-    dp.include_router(booking.router)
-    return dp
-
-
 bot = Bot(
     token=BOT_TOKEN,
     default=DefaultBotProperties(parse_mode=ParseMode.HTML),
 )
-dp = build_dispatcher()
+
+dp = Dispatcher(storage=MemoryStorage())
+dp.update.outer_middleware(LoggingMiddleware())
+dp.include_router(start.router)
+dp.include_router(gdpr.router)
+dp.include_router(intake.router)
+dp.include_router(triage.router)
+dp.include_router(booking.router)
 
 
 # ── FastAPI app ───────────────────────────────────────────────────────────────
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     await db.init_db()
     await bot.set_webhook(
         url=WEBHOOK_URL,
@@ -61,7 +54,6 @@ async def lifespan(app: FastAPI):
     )
     logger.info("Webhook set: %s", WEBHOOK_URL)
     yield
-    # Shutdown
     await bot.delete_webhook()
     await db.close_db()
     await bot.session.close()
@@ -72,14 +64,10 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post(WEBHOOK_PATH)
 async def telegram_webhook(request: Request) -> Response:
-    # Verify secret token sent by Telegram
     secret = request.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
     if secret != WEBHOOK_SECRET:
         return Response(status_code=403)
-
-    update_data = await request.json()
-    from aiogram.types import Update
-    update = Update.model_validate(update_data)
+    update = Update.model_validate(await request.json())
     await dp.feed_update(bot, update)
     return Response()
 
@@ -92,4 +80,4 @@ async def health() -> dict:
 # ── Entry point ───────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host=HOST, port=PORT)
+    uvicorn.run(app, host=HOST, port=PORT)
