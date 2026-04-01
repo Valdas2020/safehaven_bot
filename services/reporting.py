@@ -1,11 +1,11 @@
 """
-Google Sheets synchronization.
+Google Sheets synchronization via gspread (lightweight alternative to googleapiclient).
 
 Uses the same Service Account as Google Calendar.
 Requires GOOGLE_SHEETS_ID in env and Editor access granted to the service account.
 
-Three tabs are maintained:
-  - Sessions_Log     : one row per completed/no-show post-visit entry
+Three tabs:
+  - Sessions_Log     : one row per post-visit entry
   - Monthly_Summary  : aggregated hours per specialist per type of work
   - Intake_Stats     : anonymized client intake data (no names, no Telegram IDs)
 """
@@ -15,69 +15,50 @@ import json
 import logging
 from zoneinfo import ZoneInfo
 
+import gspread
 from google.oauth2 import service_account
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 
 from config import GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SHEETS_ID
 import database as db
 
 logger = logging.getLogger(__name__)
 PRAGUE_TZ = ZoneInfo("Europe/Prague")
-SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+]
 
-SHEET_SESSIONS  = "Sessions_Log"
-SHEET_MONTHLY   = "Monthly_Summary"
-SHEET_INTAKE    = "Intake_Stats"
+SHEET_SESSIONS = "Sessions_Log"
+SHEET_MONTHLY  = "Monthly_Summary"
+SHEET_INTAKE   = "Intake_Stats"
+
+_gc: gspread.Client | None = None
 
 
 # ── Privacy helper ─────────────────────────────────────────────────────────────
 
 def _client_hash(user_id: int) -> str:
-    """One-way hash of internal user_id — never export Telegram ID or name."""
     return "C_" + hashlib.sha256(str(user_id).encode()).hexdigest()[:10].upper()
 
 
-# ── Google Sheets service ──────────────────────────────────────────────────────
+# ── gspread client (cached singleton) ─────────────────────────────────────────
 
-_sheets_service = None
-
-def _build_service():
-    global _sheets_service
-    if _sheets_service is not None:
-        return _sheets_service
+def _get_client() -> gspread.Client:
+    global _gc
+    if _gc is not None:
+        return _gc
     if not GOOGLE_SERVICE_ACCOUNT_JSON:
         raise RuntimeError("GOOGLE_SERVICE_ACCOUNT_JSON not set")
     info = json.loads(GOOGLE_SERVICE_ACCOUNT_JSON)
     creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
-    _sheets_service = build("sheets", "v4", credentials=creds, cache_discovery=False)
-    return _sheets_service
+    _gc = gspread.authorize(creds)
+    return _gc
 
 
-def _ensure_sheet(service, title: str) -> None:
-    """Create a tab if it doesn't already exist."""
+def _get_or_create_sheet(spreadsheet: gspread.Spreadsheet, title: str) -> gspread.Worksheet:
     try:
-        service.spreadsheets().batchUpdate(
-            spreadsheetId=GOOGLE_SHEETS_ID,
-            body={"requests": [{"addSheet": {"properties": {"title": title}}}]},
-        ).execute()
-    except HttpError as exc:
-        if "already exists" not in str(exc):
-            raise
-
-
-def _clear_and_write(service, sheet_name: str, rows: list[list]) -> None:
-    sid = GOOGLE_SHEETS_ID
-    service.spreadsheets().values().clear(
-        spreadsheetId=sid, range=f"'{sheet_name}'!A1:Z50000"
-    ).execute()
-    if rows:
-        service.spreadsheets().values().update(
-            spreadsheetId=sid,
-            range=f"'{sheet_name}'!A1",
-            valueInputOption="RAW",
-            body={"values": rows},
-        ).execute()
+        return spreadsheet.worksheet(title)
+    except gspread.WorksheetNotFound:
+        return spreadsheet.add_worksheet(title=title, rows=1000, cols=20)
 
 
 # ── Row builders ───────────────────────────────────────────────────────────────
@@ -132,19 +113,26 @@ def _build_intake_rows(records) -> list[list]:
     return rows
 
 
-# ── Sync entry point ───────────────────────────────────────────────────────────
+# ── Sync logic ─────────────────────────────────────────────────────────────────
 
 def _write_all_sync(sessions_rows, monthly_rows, intake_rows) -> None:
     if not GOOGLE_SHEETS_ID:
         logger.warning("GOOGLE_SHEETS_ID not set — skipping Google Sheets sync")
         return
     try:
-        service = _build_service()
-        for tab in (SHEET_SESSIONS, SHEET_MONTHLY, SHEET_INTAKE):
-            _ensure_sheet(service, tab)
-        _clear_and_write(service, SHEET_SESSIONS, sessions_rows)
-        _clear_and_write(service, SHEET_MONTHLY,  monthly_rows)
-        _clear_and_write(service, SHEET_INTAKE,   intake_rows)
+        gc = _get_client()
+        sh = gc.open_by_key(GOOGLE_SHEETS_ID)
+
+        for tab, rows in [
+            (SHEET_SESSIONS, sessions_rows),
+            (SHEET_MONTHLY,  monthly_rows),
+            (SHEET_INTAKE,   intake_rows),
+        ]:
+            ws = _get_or_create_sheet(sh, tab)
+            ws.clear()
+            if rows:
+                ws.update(rows, "A1")
+
         logger.info("Google Sheets sync complete (%d session rows)", len(sessions_rows) - 1)
     except Exception as exc:
         logger.error("Google Sheets sync failed: %s", exc)
@@ -156,10 +144,6 @@ async def _async_write_all(sessions_rows, monthly_rows, intake_rows) -> None:
 
 
 async def sync_after_post_visit(booking_id: int) -> None:
-    """
-    Fetch fresh data from DB and push all three sheets.
-    Fire-and-forget — does not block the handler.
-    """
     sessions = await db.get_sessions_for_sheet()
     monthly  = await db.get_monthly_summary()
     intake   = await db.get_intake_stats()
