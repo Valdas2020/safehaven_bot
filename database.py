@@ -204,6 +204,24 @@ async def get_monthly_summary():
     """)
 
 
+async def get_pending_bookings_for_notification():
+    """
+    Bookings where the post-visit notification hasn't been sent yet:
+    - session end + 15 min is still in the future (not yet triggered), OR
+    - session ended recently but no post_visit record exists (missed after restart)
+    Excludes bookings that already have a post_visit entry.
+    """
+    return await pool().fetch("""
+        SELECT b.id, b.specialist_id, b.start_time, b.end_time
+        FROM bookings b
+        WHERE b.end_time + INTERVAL '15 minutes' > NOW() - INTERVAL '1 hour'
+          AND NOT EXISTS (
+              SELECT 1 FROM post_visit pv WHERE pv.booking_id = b.id
+          )
+        ORDER BY b.end_time
+    """)
+
+
 async def get_intake_stats():
     """Anonymized intake data for reporting (no names, no Telegram IDs)."""
     return await pool().fetch("""

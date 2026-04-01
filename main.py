@@ -2,6 +2,7 @@
 SafeHaven — Mental Health Support Telegram Bot
 Webhook mode via FastAPI + aiogram 3.x
 """
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 
@@ -14,7 +15,7 @@ import uvicorn
 from fastapi import FastAPI, Request, Response
 
 import database as db
-from config import BOT_TOKEN, HOST, PORT, WEBHOOK_PATH, WEBHOOK_SECRET, WEBHOOK_URL
+from config import BOT_TOKEN, HOST, PORT, SPECIALIST_TG_IDS, WEBHOOK_PATH, WEBHOOK_SECRET, WEBHOOK_URL
 from handlers import admin, booking, fallback, gdpr, intake, post_visit, start, triage
 from middlewares.logging_mw import LoggingMiddleware
 
@@ -46,6 +47,24 @@ dp.include_router(fallback.router)  # must be last
 
 # ── FastAPI app ───────────────────────────────────────────────────────────────
 
+async def _reschedule_pending_notifications() -> None:
+    """On startup: re-create asyncio tasks for all bookings that still need a post-visit prompt."""
+    from services.calendar import SPECIALISTS
+    bookings = await db.get_pending_bookings_for_notification()
+    count = 0
+    for b in bookings:
+        sp_tg_id = SPECIALIST_TG_IDS.get(b["specialist_id"])
+        if sp_tg_id:
+            sp_name = SPECIALISTS.get(b["specialist_id"], {}).get("name", b["specialist_id"])
+            asyncio.create_task(
+                post_visit.schedule_specialist_notification(
+                    bot, sp_tg_id, b["id"], b["start_time"], b["end_time"], sp_name
+                )
+            )
+            count += 1
+    logger.info("Rescheduled %d pending post-visit notification(s)", count)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await db.init_db()
@@ -56,6 +75,7 @@ async def lifespan(app: FastAPI):
         drop_pending_updates=True,
     )
     logger.info("Webhook set: %s", WEBHOOK_URL)
+    await _reschedule_pending_notifications()
     yield
     # NOTE: do NOT delete_webhook on shutdown — Render rolling restarts would
     # clear the webhook before the new instance registers it.
