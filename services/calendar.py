@@ -60,12 +60,12 @@ SPECIALISTS: dict[str, dict] = {
     },
 }
 
-SLOT_DURATION  = timedelta(minutes=60)  # booked in calendar
+SLOT_DURATION  = timedelta(minutes=60)  # booked in calendar (45 min session + 15 min break)
 SLOT_DISPLAY   = 45                     # minutes shown to user
 LOOK_AHEAD_DAYS = 7
 TOP_SLOTS = 3
-WORK_START = 9   # 09:00 Prague
-WORK_END   = 18  # 18:00 Prague
+WORK_START = 9   # first slot starts 09:00 Prague
+WORK_END   = 21  # last slot starts 20:00, ends 21:00 (displayed as 20:00–20:45)
 
 
 # ── Data types ────────────────────────────────────────────────────────────────
@@ -111,9 +111,9 @@ def _build_service():
 
 
 def _is_working_hour(dt: datetime) -> bool:
-    """True if dt falls within Mon–Fri 09:00–18:00 Europe/Prague."""
+    """True if dt falls within 09:00–20:00 Europe/Prague (7 days a week)."""
     local = dt.astimezone(PRAGUE_TZ)
-    return local.weekday() < 5 and WORK_START <= local.hour < WORK_END
+    return WORK_START <= local.hour < WORK_END
 
 
 # ── Main public API ───────────────────────────────────────────────────────────
@@ -145,6 +145,12 @@ def _sync_get_slots(lang: str, age_cat: str, triage_level: str) -> list[Slot]:
     now      = datetime.now(timezone.utc).replace(second=0, microsecond=0)
     time_max = now + timedelta(days=LOOK_AHEAD_DAYS)
 
+    # Round cursor up to the next full hour so slots always start on the hour
+    if now.minute != 0:
+        cursor = now.replace(minute=0, microsecond=0) + timedelta(hours=1)
+    else:
+        cursor = now
+
     # Fetch free/busy for matched specialists only
     items = [{"id": SPECIALISTS[sp_id]["calendar_id"]} for sp_id in matched_ids]
     try:
@@ -175,7 +181,6 @@ def _sync_get_slots(lang: str, age_cat: str, triage_level: str) -> list[Slot]:
     # Walk in 60-min steps; cycle through specialists for even distribution
     slots_per_sp: dict[str, list[Slot]] = {sp_id: [] for sp_id in matched_ids}
 
-    cursor = now
     while cursor < time_max:
         if _is_working_hour(cursor):
             slot_end = cursor + SLOT_DURATION
