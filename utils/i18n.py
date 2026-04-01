@@ -34,11 +34,25 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_online": "Онлайн",
         "format_in_person": "Особисто",
         "cat_crisis": "🆘 Криза",
-        "cat_consult": "💬 Консультація",
+        "cat_consult": "🧠 Психолог",
         "cat_ikp": "🤝 Допомога / ІКП",
         "btn_accept": "✅ Погоджуюсь",
         "btn_decline": "❌ Відмовляюсь",
         "btn_callback": "📞 Передзвоніть мені",
+        "intake_email": (
+            "📧 Введіть ваш email для підтвердження та нагадування за день до сесії.\n"
+            "_(Якщо у вас немає email або не хочете вказувати — натисніть «Пропустити»)_"
+        ),
+        "intake_phone": (
+            "📱 Введіть ваш номер телефону (необов'язково).\n"
+            "_(Натисніть «Пропустити», якщо не хочете вказувати)_"
+        ),
+        "intake_contact_method": "Який спосіб зв'язку ви надаєте перевагу?",
+        "btn_skip": "⏭ Пропустити",
+        "contact_phone": "📞 Телефон",
+        "contact_viber": "💜 Viber",
+        "contact_whatsapp": "💚 WhatsApp",
+        "contact_telegram": "✈️ Telegram",
     },
     "RU": {
         "lang_prompt": "Добро пожаловать! 👋\nВыберите язык:",
@@ -73,11 +87,25 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_online": "Онлайн",
         "format_in_person": "Лично",
         "cat_crisis": "🆘 Кризис",
-        "cat_consult": "💬 Консультация",
+        "cat_consult": "🧠 Психолог",
         "cat_ikp": "🤝 Помощь / ИКП",
         "btn_accept": "✅ Соглашаюсь",
         "btn_decline": "❌ Отказываюсь",
         "btn_callback": "📞 Перезвоните мне",
+        "intake_email": (
+            "📧 Введите ваш email для подтверждения и напоминания за день до сессии.\n"
+            "_(Если у вас нет email или не хотите указывать — нажмите «Пропустить»)_"
+        ),
+        "intake_phone": (
+            "📱 Введите ваш номер телефона (необязательно).\n"
+            "_(Нажмите «Пропустить», если не хотите указывать)_"
+        ),
+        "intake_contact_method": "Какой способ связи вы предпочитаете?",
+        "btn_skip": "⏭ Пропустить",
+        "contact_phone": "📞 Телефон",
+        "contact_viber": "💜 Viber",
+        "contact_whatsapp": "💚 WhatsApp",
+        "contact_telegram": "✈️ Telegram",
     },
     "CZ": {
         "lang_prompt": "Vítejte! 👋\nVyberte jazyk:",
@@ -112,11 +140,25 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_online": "Online",
         "format_in_person": "Osobně",
         "cat_crisis": "🆘 Krize",
-        "cat_consult": "💬 Konzultace",
+        "cat_consult": "🧠 Psycholog",
         "cat_ikp": "🤝 Pomoc / IKP",
         "btn_accept": "✅ Souhlasím",
         "btn_decline": "❌ Odmítám",
         "btn_callback": "📞 Zavolejte mi zpět",
+        "intake_email": (
+            "📧 Zadejte svůj email pro potvrzení a připomenutí den před sezením.\n"
+            "_(Pokud nemáte email nebo nechcete uvádět — klikněte na «Přeskočit»)_"
+        ),
+        "intake_phone": (
+            "📱 Zadejte své telefonní číslo (nepovinné).\n"
+            "_(Klikněte na «Přeskočit», pokud nechcete uvádět)_"
+        ),
+        "intake_contact_method": "Jaký způsob kontaktu preferujete?",
+        "btn_skip": "⏭ Přeskočit",
+        "contact_phone": "📞 Telefon",
+        "contact_viber": "💜 Viber",
+        "contact_whatsapp": "💚 WhatsApp",
+        "contact_telegram": "✈️ Telegram",
     },
     "EN": {
         "lang_prompt": "Welcome! 👋\nSelect your language:",
@@ -151,11 +193,25 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_online": "Online",
         "format_in_person": "In-person",
         "cat_crisis": "🆘 Crisis",
-        "cat_consult": "💬 Consultation",
+        "cat_consult": "🧠 Psychologist",
         "cat_ikp": "🤝 Assistance / IKP",
         "btn_accept": "✅ I agree",
         "btn_decline": "❌ I decline",
         "btn_callback": "📞 Please call me back",
+        "intake_email": (
+            "📧 Enter your email for a booking confirmation and a reminder the day before.\n"
+            "_(No email or prefer not to share? Tap «Skip»)_"
+        ),
+        "intake_phone": (
+            "📱 Enter your phone number (optional).\n"
+            "_(Tap «Skip» if you'd rather not share it)_"
+        ),
+        "intake_contact_method": "Which contact method do you prefer?",
+        "btn_skip": "⏭ Skip",
+        "contact_phone": "📞 Phone",
+        "contact_viber": "💜 Viber",
+        "contact_whatsapp": "💚 WhatsApp",
+        "contact_telegram": "✈️ Telegram",
     },
 }
 

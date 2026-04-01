@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 import database as db
-from keyboards.inline import age_keyboard, format_keyboard, triage_keyboard
+from keyboards.inline import age_keyboard, contact_method_keyboard, format_keyboard, skip_keyboard, triage_keyboard
 from states.user_states import UserFlow
 from utils.i18n import t
 
@@ -72,10 +72,92 @@ async def cb_format(callback: CallbackQuery, state: FSMContext) -> None:
 
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(
+        t(lang, "intake_email"),
+        reply_markup=skip_keyboard(lang),
+        parse_mode="Markdown",
+    )
+    await state.set_state(UserFlow.intake_email)
+    await callback.answer()
+
+
+# ── Step 5: Email ─────────────────────────────────────────────────────────────
+
+@router.message(UserFlow.intake_email)
+async def msg_email(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+    email = message.text.strip()[:254]
+
+    await state.update_data(email=email)
+    await db.upsert_user(message.from_user.id, email=email)
+
+    await message.answer(t(lang, "intake_phone"), reply_markup=skip_keyboard(lang), parse_mode="Markdown")
+    await state.set_state(UserFlow.intake_phone)
+
+
+@router.callback_query(UserFlow.intake_email, F.data == "skip")
+async def cb_skip_email(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await callback.message.answer(t(lang, "intake_phone"), reply_markup=skip_keyboard(lang), parse_mode="Markdown")
+    await state.set_state(UserFlow.intake_phone)
+    await callback.answer()
+
+
+# ── Step 6: Phone ─────────────────────────────────────────────────────────────
+
+@router.message(UserFlow.intake_phone)
+async def msg_phone(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+    phone = message.text.strip()[:32]
+
+    await state.update_data(phone=phone)
+    await db.upsert_user(message.from_user.id, phone=phone)
+
+    await message.answer(t(lang, "intake_contact_method"), reply_markup=contact_method_keyboard(lang))
+    await state.set_state(UserFlow.intake_contact_method)
+
+
+@router.callback_query(UserFlow.intake_phone, F.data == "skip")
+async def cb_skip_phone(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await _go_to_triage(callback.message, lang, state)
+    await callback.answer()
+    logger.info("user_id=%s completed intake (no phone)", callback.from_user.id)
+
+
+# ── Step 7: Contact method ────────────────────────────────────────────────────
+
+@router.callback_query(
+    UserFlow.intake_contact_method,
+    F.data.in_({"cm_phone", "cm_viber", "cm_whatsapp", "cm_telegram", "skip"}),
+)
+async def cb_contact_method(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+
+    if callback.data != "skip":
+        cm = callback.data[3:]  # strip "cm_" prefix
+        await state.update_data(contact_method=cm)
+        await db.upsert_user(callback.from_user.id, contact_method=cm)
+
+    await callback.message.edit_reply_markup(reply_markup=None)
+    await _go_to_triage(callback.message, lang, state)
+    await callback.answer()
+    logger.info("user_id=%s completed intake", callback.from_user.id)
+
+
+async def _go_to_triage(message, lang: str, state: FSMContext) -> None:
+    from keyboards.inline import triage_keyboard as _triage_kb
+    await message.answer(
         t(lang, "triage_prompt"),
-        reply_markup=triage_keyboard(lang),
+        reply_markup=_triage_kb(lang),
         parse_mode="Markdown",
     )
     await state.set_state(UserFlow.triage_choice)
-    await callback.answer()
-    logger.info("user_id=%s completed intake", callback.from_user.id)

@@ -37,6 +37,28 @@ def format_keyboard(lang: str) -> InlineKeyboardMarkup:
     ]])
 
 
+def skip_keyboard(lang: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t(lang, "btn_skip"), callback_data="skip"),
+    ]])
+
+
+def contact_method_keyboard(lang: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text=t(lang, "contact_phone"),    callback_data="cm_phone"),
+            InlineKeyboardButton(text=t(lang, "contact_viber"),    callback_data="cm_viber"),
+        ],
+        [
+            InlineKeyboardButton(text=t(lang, "contact_whatsapp"), callback_data="cm_whatsapp"),
+            InlineKeyboardButton(text=t(lang, "contact_telegram"), callback_data="cm_telegram"),
+        ],
+        [
+            InlineKeyboardButton(text=t(lang, "btn_skip"), callback_data="skip"),
+        ],
+    ])
+
+
 def triage_keyboard(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=t(lang, "cat_crisis"),  callback_data="cat_crisis")],

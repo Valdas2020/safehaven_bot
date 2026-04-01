@@ -26,6 +26,11 @@ SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
 SMTP_USER: str = os.getenv("SMTP_USER", "")   # sender address
 SMTP_PASS: str = os.getenv("SMTP_PASS", "")   # app password
 
+# Admin access (comma-separated Telegram user IDs)
+ADMIN_IDS: set[int] = {
+    int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip().isdigit()
+}
+
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 if not WEBHOOK_HOST:

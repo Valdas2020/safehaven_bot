@@ -69,7 +69,7 @@ async def cb_category(callback: CallbackQuery, state: FSMContext) -> None:
 
     category_labels = {
         "cat_crisis":  {"UA": "🆘 Криза",        "RU": "🆘 Кризис",       "CZ": "🆘 Krize",       "EN": "🆘 Crisis"},
-        "cat_consult": {"UA": "💬 Консультація", "RU": "💬 Консультация", "CZ": "💬 Konzultace", "EN": "💬 Consultation"},
+        "cat_consult": {"UA": "🧠 Психолог",      "RU": "🧠 Психолог",      "CZ": "🧠 Psycholog",    "EN": "🧠 Psychologist"},
         "cat_ikp":     {"UA": "🤝 Допомога / ІКП","RU": "🤝 Помощь / ИКП","CZ": "🤝 Pomoc / IKP","EN": "🤝 Assistance / IKP"},
     }
     description = category_labels.get(category, {}).get(lang, category)

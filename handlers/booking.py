@@ -7,7 +7,7 @@ from aiogram.types import CallbackQuery, Message
 
 import database as db
 from services.calendar import SPECIALISTS, create_calendar_event
-from services.mailer import notify_specialist
+from services.mailer import notify_specialist, send_client_confirmation
 from states.user_states import UserFlow
 from utils.i18n import t
 
@@ -48,8 +48,17 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     end   = datetime.fromisoformat(chosen["end"]).replace(tzinfo=timezone.utc)
     specialist_id = chosen["specialist_id"]
 
-    # Create Google Calendar event (uses telegram_id for privacy, not name)
-    event_id = create_calendar_event(specialist_id, callback.from_user.id, start, end)
+    # Create Google Calendar event with client contact info
+    event_id = create_calendar_event(
+        specialist_id,
+        callback.from_user.id,
+        start,
+        end,
+        client_name=name,
+        client_phone=data.get("phone", ""),
+        client_email=data.get("email", ""),
+        contact_method=data.get("contact_method", ""),
+    )
 
     # Save booking to DB
     await db.create_booking(db_user_id, specialist_id, start, end, event_id)
@@ -65,6 +74,18 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         start=start,
         end=end,
     )
+
+    # Send client confirmation (email if provided, always Telegram)
+    client_email = data.get("email", "")
+    if client_email:
+        await send_client_confirmation(
+            client_email=client_email,
+            client_name=name,
+            specialist_name=sp.get("name", specialist_id),
+            start=start,
+            end=end,
+            lang=lang,
+        )
 
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer(t(lang, "slot_booked"))

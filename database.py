@@ -29,11 +29,22 @@ async def init_db() -> None:
                 age_cat         TEXT,
                 location        TEXT,
                 format          TEXT,
+                email           TEXT,
+                phone           TEXT,
+                contact_method  TEXT,
                 gdpr_accepted   BOOLEAN NOT NULL DEFAULT FALSE,
                 status          TEXT NOT NULL DEFAULT 'active',
                 created_at      TIMESTAMPTZ DEFAULT NOW()
             )
         """)
+        # Migrate existing deployments that lack the new columns
+        for col, coltype in [("email", "TEXT"), ("phone", "TEXT"), ("contact_method", "TEXT")]:
+            await conn.execute(f"""
+                DO $$ BEGIN
+                    ALTER TABLE users ADD COLUMN {col} {coltype};
+                EXCEPTION WHEN duplicate_column THEN NULL;
+                END $$;
+            """)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS cases (
                 id                      BIGSERIAL PRIMARY KEY,

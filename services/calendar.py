@@ -208,6 +208,10 @@ def create_calendar_event(
     telegram_id: int,
     start: datetime,
     end: datetime,
+    client_name: str = "",
+    client_phone: str = "",
+    client_email: str = "",
+    contact_method: str = "",
 ) -> str | None:
     """
     Create a 60-min event in specialist's calendar.
@@ -217,11 +221,22 @@ def create_calendar_event(
     try:
         service = _build_service()
         sp = SPECIALISTS[specialist_id]
+        contact_lines = []
+        if client_phone:
+            cm_label = f" ({contact_method})" if contact_method else ""
+            contact_lines.append(f"Phone: {client_phone}{cm_label}")
+        elif contact_method:
+            contact_lines.append(f"Contact via: {contact_method}")
+        if client_email:
+            contact_lines.append(f"Email: {client_email}")
+        contact_lines.append(f"Telegram ID: {telegram_id}")
+        contact_str = "\n".join(contact_lines)
         event = {
-            "summary": "SafeHaven Session",
+            "summary": f"SafeHaven — {client_name}" if client_name else "SafeHaven Session",
             "description": (
                 f"Client session (45 min) + 15 min buffer. Booked via SafeHaven bot.\n"
-                f"Telegram ID: {telegram_id}"
+                f"Client: {client_name}\n"
+                f"{contact_str}"
             ),
             "start": {"dateTime": start.isoformat(), "timeZone": "UTC"},
             "end":   {"dateTime": end.isoformat(),   "timeZone": "UTC"},
