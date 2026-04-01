@@ -41,18 +41,18 @@ async def cmd_stats(message: Message) -> None:
     sp_block = "\n".join(sp_lines) if sp_lines else "  (no bookings yet)"
 
     text = (
-        "📊 *SafeHaven Stats*\n\n"
-        "*New clients*\n"
+        "📊 <b>SafeHaven Stats</b>\n\n"
+        "<b>New clients</b>\n"
         f"  Today: {r['users_day']}\n"
         f"  Week:  {r['users_week']}\n"
         f"  Month: {r['users_month']}\n\n"
-        "*Sessions booked*\n"
+        "<b>Sessions booked</b>\n"
         f"  Today: {r['books_day']}\n"
         f"  Week:  {r['books_week']}\n"
         f"  Month: {r['books_month']}\n\n"
-        "*Sessions by specialist*\n"
+        "<b>Sessions by specialist</b>\n"
         f"{sp_block}"
     )
 
-    await message.answer(text, parse_mode="Markdown")
+    await message.answer(text, parse_mode="HTML")
     logger.info("Stats requested by admin user_id=%s", message.from_user.id)
