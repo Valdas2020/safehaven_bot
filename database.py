@@ -214,7 +214,7 @@ async def get_pending_bookings_for_notification():
     return await pool().fetch("""
         SELECT b.id, b.specialist_id, b.start_time, b.end_time
         FROM bookings b
-        WHERE b.end_time + INTERVAL '15 minutes' > NOW() - INTERVAL '1 hour'
+        WHERE b.end_time + INTERVAL '15 minutes' > CURRENT_DATE
           AND NOT EXISTS (
               SELECT 1 FROM post_visit pv WHERE pv.booking_id = b.id
           )
