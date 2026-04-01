@@ -40,12 +40,18 @@ def _client_hash(user_id: int) -> str:
 
 # ── Google Sheets service ──────────────────────────────────────────────────────
 
+_sheets_service = None
+
 def _build_service():
+    global _sheets_service
+    if _sheets_service is not None:
+        return _sheets_service
     if not GOOGLE_SERVICE_ACCOUNT_JSON:
         raise RuntimeError("GOOGLE_SERVICE_ACCOUNT_JSON not set")
     info = json.loads(GOOGLE_SERVICE_ACCOUNT_JSON)
     creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
-    return build("sheets", "v4", credentials=creds, cache_discovery=False)
+    _sheets_service = build("sheets", "v4", credentials=creds, cache_discovery=False)
+    return _sheets_service
 
 
 def _ensure_sheet(service, title: str) -> None:

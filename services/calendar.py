@@ -102,12 +102,18 @@ def match_specialists(age_cat: str, triage_level: str) -> list[str]:
 
 # ── Calendar helpers ──────────────────────────────────────────────────────────
 
+_calendar_service = None
+
 def _build_service():
+    global _calendar_service
+    if _calendar_service is not None:
+        return _calendar_service
     if not GOOGLE_SERVICE_ACCOUNT_JSON:
         raise RuntimeError("GOOGLE_SERVICE_ACCOUNT_JSON env var not set")
     info = json.loads(GOOGLE_SERVICE_ACCOUNT_JSON)
     creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
-    return build("calendar", "v3", credentials=creds, cache_discovery=False)
+    _calendar_service = build("calendar", "v3", credentials=creds, cache_discovery=False)
+    return _calendar_service
 
 
 def _is_working_hour(dt: datetime) -> bool:
