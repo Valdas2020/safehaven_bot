@@ -68,6 +68,17 @@ async def init_db() -> None:
                 created_at      TIMESTAMPTZ DEFAULT NOW()
             )
         """)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS post_visit (
+                id               BIGSERIAL PRIMARY KEY,
+                booking_id       BIGINT NOT NULL REFERENCES bookings(id),
+                status           TEXT NOT NULL,
+                duration_minutes INT NOT NULL DEFAULT 45,
+                type_of_work     TEXT,
+                note_short       TEXT,
+                created_at       TIMESTAMPTZ DEFAULT NOW()
+            )
+        """)
     logger.info("PostgreSQL initialised")
 
 
@@ -145,3 +156,61 @@ async def set_callback_requested(user_id: int) -> None:
     await pool().execute(
         "UPDATE users SET status = 'callback_requested' WHERE id = $1", user_id
     )
+
+
+async def create_post_visit(
+    booking_id: int,
+    status: str,
+    duration_minutes: int = 45,
+    type_of_work: str | None = None,
+    note_short: str | None = None,
+) -> int:
+    row = await pool().fetchrow(
+        """
+        INSERT INTO post_visit (booking_id, status, duration_minutes, type_of_work, note_short)
+        VALUES ($1, $2, $3, $4, $5) RETURNING id
+        """,
+        booking_id, status, duration_minutes, type_of_work, note_short,
+    )
+    logger.info("Post-visit #%s created status=%s booking_id=%s", row["id"], status, booking_id)
+    return row["id"]
+
+
+async def get_sessions_for_sheet():
+    """All post-visit records joined with booking info (no PII)."""
+    return await pool().fetch("""
+        SELECT b.start_time, b.end_time, b.specialist_id, b.user_id,
+               pv.type_of_work, pv.duration_minutes, pv.status, pv.note_short
+        FROM post_visit pv
+        JOIN bookings b ON b.id = pv.booking_id
+        ORDER BY b.start_time DESC
+    """)
+
+
+async def get_monthly_summary():
+    """Aggregated hours per specialist per type of work."""
+    return await pool().fetch("""
+        SELECT
+            EXTRACT(YEAR  FROM b.start_time)::int AS year,
+            EXTRACT(MONTH FROM b.start_time)::int AS month,
+            b.specialist_id,
+            pv.type_of_work,
+            SUM(pv.duration_minutes)::int AS total_minutes
+        FROM post_visit pv
+        JOIN bookings b ON b.id = pv.booking_id
+        WHERE pv.status = 'completed'
+        GROUP BY year, month, b.specialist_id, pv.type_of_work
+        ORDER BY year DESC, month DESC, b.specialist_id
+    """)
+
+
+async def get_intake_stats():
+    """Anonymized intake data for reporting (no names, no Telegram IDs)."""
+    return await pool().fetch("""
+        SELECT DATE(u.created_at) AS date,
+               u.language, u.age_cat,
+               c.triage_level, c.category
+        FROM cases c
+        JOIN users u ON u.id = c.user_id
+        ORDER BY c.created_at DESC
+    """)

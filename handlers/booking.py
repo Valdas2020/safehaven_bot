@@ -8,6 +8,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 import database as db
+from config import SPECIALIST_TG_IDS
+from handlers.post_visit import schedule_specialist_notification
 from services.calendar import SPECIALISTS, create_calendar_event
 from services.mailer import notify_specialist, send_client_confirmation
 from states.user_states import UserFlow
@@ -85,7 +87,7 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     )
 
     # Save booking to DB
-    await db.create_booking(db_user_id, specialist_id, start, end, event_id)
+    booking_id = await db.create_booking(db_user_id, specialist_id, start, end, event_id)
 
     # Send email notification to specialist
     sp = SPECIALISTS.get(specialist_id, {})
@@ -127,6 +129,15 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     asyncio.create_task(
         _send_reminder(callback.bot, callback.from_user.id, reminder_text, remind_at)
     )
+
+    # Schedule post-visit prompt to specialist 15 min after session ends
+    sp_tg_id = SPECIALIST_TG_IDS.get(specialist_id)
+    if sp_tg_id:
+        asyncio.create_task(
+            schedule_specialist_notification(
+                callback.bot, sp_tg_id, booking_id, start, end, sp_name
+            )
+        )
 
     await state.clear()
     await callback.answer()

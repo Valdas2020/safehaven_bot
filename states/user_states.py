@@ -1,6 +1,10 @@
 from aiogram.fsm.state import State, StatesGroup
 
 
+class SpecialistFlow(StatesGroup):
+    awaiting_note = State()
+
+
 class UserFlow(StatesGroup):
     language_selection   = State()
     gdpr_consent         = State()

@@ -20,6 +20,19 @@ DATABASE_URL: str = os.getenv("DATABASE_URL", "")  # postgresql+asyncpg://...
 # Google Calendar
 GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
 
+# Google Sheets (same service account, must have Editor access)
+GOOGLE_SHEETS_ID: str = os.getenv("GOOGLE_SHEETS_ID", "")
+
+# Specialist Telegram IDs for post-visit prompts
+# Format: "specialist_id:telegram_id,specialist_id2:telegram_id2"
+# Example: SPECIALIST_TG_IDS=psych_adult_1:123456789,psych_children:987654321
+SPECIALIST_TG_IDS: dict[str, int] = {}
+for _pair in os.getenv("SPECIALIST_TG_IDS", "").split(","):
+    if ":" in _pair:
+        _sp_id, _tg_id = _pair.strip().split(":", 1)
+        if _tg_id.strip().lstrip("-").isdigit():
+            SPECIALIST_TG_IDS[_sp_id.strip()] = int(_tg_id.strip())
+
 # SMTP (for specialist email notifications)
 SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
