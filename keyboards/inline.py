@@ -3,6 +3,12 @@ from utils.i18n import t
 from services.calendar import Slot, SPECIALISTS
 
 
+def begin_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text="▶️  Start / Почати / Начать", callback_data="begin"),
+    ]])
+
+
 def lang_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
@@ -47,10 +53,6 @@ def contact_method_keyboard(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(text=t(lang, "contact_phone"),    callback_data="cm_phone"),
-            InlineKeyboardButton(text=t(lang, "contact_viber"),    callback_data="cm_viber"),
-        ],
-        [
-            InlineKeyboardButton(text=t(lang, "contact_whatsapp"), callback_data="cm_whatsapp"),
             InlineKeyboardButton(text=t(lang, "contact_telegram"), callback_data="cm_telegram"),
         ],
         [

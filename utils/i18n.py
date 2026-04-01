@@ -25,7 +25,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "_Для запису до спеціаліста надішліть /start_"
         ),
         "slots_header": "📅 Доступні слоти (сесія 45 хв):",
-        "slot_booked": "✅ Сесію заброньовано! Спеціаліст зв'яжеться для підтвердження.",
+        "slot_booked": "✅ Сесію заброньовано!\n{details}",
+        "slot_reminder": "⏰ Нагадування: ваша сесія <b>через 2 години</b>.\n\n{details}",
         "slot_callback": "📞 Передзвоніть мені",
         "callback_saved": "📞 Зрозуміло! Ми зателефонуємо вам найближчим часом.",
         "no_slots": "😔 Наразі немає вільних слотів. Ми зв'яжемося з вами вручну.",
@@ -78,7 +79,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "_Для записи к специалисту отправьте /start_"
         ),
         "slots_header": "📅 Доступные слоты (сессия 45 мин):",
-        "slot_booked": "✅ Сессия забронирована! Специалист свяжется для подтверждения.",
+        "slot_booked": "✅ Сессия забронирована!\n{details}",
+        "slot_reminder": "⏰ Напоминание: ваша сессия <b>через 2 часа</b>.\n\n{details}",
         "slot_callback": "📞 Перезвоните мне",
         "callback_saved": "📞 Понял! Мы перезвоним вам в ближайшее время.",
         "no_slots": "😔 Свободных слотов пока нет. Мы свяжемся вручную.",
@@ -131,7 +133,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "_Pro objednání ke specialistovi napište /start_"
         ),
         "slots_header": "📅 Dostupné termíny (sezení 45 min):",
-        "slot_booked": "✅ Termín zarezervován! Specialista vás kontaktuje.",
+        "slot_booked": "✅ Termín zarezervován!\n{details}",
+        "slot_reminder": "⏰ Připomenutí: vaše sezení <b>za 2 hodiny</b>.\n\n{details}",
         "slot_callback": "📞 Zavolejte mi zpět",
         "callback_saved": "📞 Rozumím! Zavoláme vám co nejdříve.",
         "no_slots": "😔 Momentálně nejsou volné termíny. Ozveme se ručně.",
@@ -184,7 +187,8 @@ TEXTS: dict[str, dict[str, str]] = {
             "_To book a session with a specialist, send /start_"
         ),
         "slots_header": "📅 Available slots (45-min session):",
-        "slot_booked": "✅ Session booked! The specialist will contact you to confirm.",
+        "slot_booked": "✅ Session booked!\n{details}",
+        "slot_reminder": "⏰ Reminder: your session is <b>in 2 hours</b>.\n\n{details}",
         "slot_callback": "📞 Please call me back",
         "callback_saved": "📞 Got it! We will call you back shortly.",
         "no_slots": "😔 No available slots right now. We'll reach out manually.",

@@ -1,5 +1,7 @@
+import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -13,6 +15,28 @@ from utils.i18n import t
 
 logger = logging.getLogger(__name__)
 router = Router(name="booking")
+PRAGUE_TZ = ZoneInfo("Europe/Prague")
+
+
+def _slot_details(start: datetime, end: datetime, sp_name: str) -> str:
+    local = start.astimezone(PRAGUE_TZ)
+    local_end = end.astimezone(PRAGUE_TZ)
+    return (
+        f"📅 {local.strftime('%A, %d.%m.%Y')}\n"
+        f"🕐 {local.strftime('%H:%M')}–{local_end.strftime('%H:%M')} (Прага)\n"
+        f"👤 {sp_name}"
+    )
+
+
+async def _send_reminder(bot, telegram_id: int, text: str, send_at: datetime) -> None:
+    delay = (send_at - datetime.now(timezone.utc)).total_seconds()
+    if delay > 0:
+        await asyncio.sleep(delay)
+    try:
+        await bot.send_message(telegram_id, text, parse_mode="HTML")
+        logger.info("Reminder sent to telegram_id=%s", telegram_id)
+    except Exception as exc:
+        logger.error("Failed to send reminder to %s: %s", telegram_id, exc)
 
 
 @router.callback_query(UserFlow.slot_selection, F.data == "slot_callback")
@@ -75,20 +99,35 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         end=end,
     )
 
-    # Send client confirmation (email if provided, always Telegram)
+    sp_name = sp.get("name", specialist_id)
+    details = _slot_details(start, end, sp_name)
+
+    # Send client confirmation email (if provided)
     client_email = data.get("email", "")
     if client_email:
         await send_client_confirmation(
             client_email=client_email,
             client_name=name,
-            specialist_name=sp.get("name", specialist_id),
+            specialist_name=sp_name,
             start=start,
             end=end,
             lang=lang,
         )
 
+    # Telegram confirmation
     await callback.message.edit_reply_markup(reply_markup=None)
-    await callback.message.answer(t(lang, "slot_booked"))
+    await callback.message.answer(
+        t(lang, "slot_booked").format(details=details),
+        parse_mode="HTML",
+    )
+
+    # Schedule Telegram reminder 2 hours before the session
+    reminder_text = t(lang, "slot_reminder").format(details=details)
+    remind_at = start - timedelta(hours=2)
+    asyncio.create_task(
+        _send_reminder(callback.bot, callback.from_user.id, reminder_text, remind_at)
+    )
+
     await state.clear()
     await callback.answer()
     logger.info(
