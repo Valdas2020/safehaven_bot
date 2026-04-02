@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -48,7 +49,10 @@ async def cb_callback_request(callback: CallbackQuery, state: FSMContext) -> Non
     db_user_id = data["db_user_id"]
 
     await db.set_callback_requested(db_user_id)
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
     await callback.message.answer(t(lang, "callback_saved"))
     await state.clear()
     await callback.answer()
@@ -117,7 +121,10 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         )
 
     # Telegram confirmation
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
     await callback.message.answer(
         t(lang, "slot_booked").format(details=details),
         parse_mode="HTML",

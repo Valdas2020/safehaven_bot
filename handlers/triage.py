@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -74,7 +75,10 @@ async def cb_category(callback: CallbackQuery, state: FSMContext) -> None:
     }
     description = category_labels.get(category, {}).get(lang, category)
 
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass  # already removed (double-tap)
     await _handle_triage_result(
         telegram_id=callback.from_user.id,
         db_user_id=db_user_id,

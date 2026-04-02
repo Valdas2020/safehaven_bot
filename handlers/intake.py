@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import F, Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -70,7 +71,10 @@ async def cb_format(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(format=fmt)
     await db.upsert_user(callback.from_user.id, format=fmt)
 
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
     await callback.message.answer(
         t(lang, "intake_email"),
         reply_markup=skip_keyboard(lang),
@@ -100,7 +104,10 @@ async def cb_skip_email(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data["lang"]
 
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
     await callback.message.answer(t(lang, "intake_phone"), reply_markup=skip_keyboard(lang), parse_mode="Markdown")
     await state.set_state(UserFlow.intake_phone)
     await callback.answer()
@@ -126,7 +133,10 @@ async def cb_skip_phone(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data["lang"]
 
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
     await _go_to_triage(callback.message, lang, state)
     await callback.answer()
     logger.info("user_id=%s completed intake (no phone)", callback.from_user.id)
@@ -147,7 +157,10 @@ async def cb_contact_method(callback: CallbackQuery, state: FSMContext) -> None:
         await state.update_data(contact_method=cm)
         await db.upsert_user(callback.from_user.id, contact_method=cm)
 
-    await callback.message.edit_reply_markup(reply_markup=None)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
     await _go_to_triage(callback.message, lang, state)
     await callback.answer()
     logger.info("user_id=%s completed intake", callback.from_user.id)
