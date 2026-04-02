@@ -19,7 +19,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "Якщо захочете повернутися — /start"
         ),
         "deleteme_notfound": "Даних не знайдено — можливо, ви ще не реєструвались.",
-        "intake_name": "Як вас звати? (можна псевдонім)",
+        "intake_name": "Як вас звати? (ім'я та прізвище)",
         "intake_age": "Оберіть вікову категорію:",
         "intake_location": "У якому місті / регіоні ви знаходитесь?",
         "intake_format": "Який формат допомоги вам підходить?",
@@ -50,15 +50,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_decline": "❌ Відмовляюсь",
         "btn_callback": "📞 Передзвоніть мені",
         "btn_call_operator": "☎️ Зателефонувати оператору",
-        "intake_email": (
-            "📧 Введіть ваш email для підтвердження та нагадування за день до сесії.\n"
-            "_(Якщо у вас немає email або не хочете вказувати — натисніть «Пропустити»)_"
-        ),
-        "intake_phone": (
-            "📱 Введіть ваш номер телефону (необов'язково).\n"
-            "_(Натисніть «Пропустити», якщо не хочете вказувати)_"
-        ),
+        "intake_email": "📧 Введіть ваш email (обов'язкове поле):",
+        "intake_email_invalid": "⚠️ Будь ласка, введіть коректний email адрес.",
+        "intake_phone": "📱 Введіть ваш номер телефону (обов'язкове поле):",
+        "intake_phone_invalid": "⚠️ Будь ласка, введіть номер телефону (мінімум 7 цифр).",
         "intake_contact_method": "Який спосіб зв'язку ви надаєте перевагу?",
+        "intake_protection": "Чи маєте ви статус тимчасового захисту в Чехії?",
+        "intake_prague": "Ваша адреса реєстрації — місто Прага?",
+        "not_eligible_protection": (
+            "😔 На жаль, в рамках даного проекту ми працюємо лише з біженцями, "
+            "які мають статус тимчасового захисту в Чехії."
+        ),
+        "not_eligible_prague": (
+            "😔 На жаль, в рамках даного проекту ми працюємо лише з біженцями, "
+            "які мають статус тимчасового захисту в Чехії та проживають у Празі."
+        ),
+        "btn_yes": "✅ Так",
+        "btn_no": "❌ Ні",
         "btn_skip": "⏭ Пропустити",
         "contact_phone": "📞 Телефон",
         "contact_viber": "💜 Viber",
@@ -83,7 +91,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "Если захотите вернуться — /start"
         ),
         "deleteme_notfound": "Данные не найдены — возможно, вы ещё не регистрировались.",
-        "intake_name": "Как вас зовут? (можно псевдоним)",
+        "intake_name": "Как вас зовут? (имя и фамилия)",
         "intake_age": "Выберите возрастную категорию:",
         "intake_location": "В каком городе / регионе вы находитесь?",
         "intake_format": "Какой формат помощи вам подходит?",
@@ -114,15 +122,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_decline": "❌ Отказываюсь",
         "btn_callback": "📞 Перезвоните мне",
         "btn_call_operator": "☎️ Позвонить оператору",
-        "intake_email": (
-            "📧 Введите ваш email для подтверждения и напоминания за день до сессии.\n"
-            "_(Если у вас нет email или не хотите указывать — нажмите «Пропустить»)_"
-        ),
-        "intake_phone": (
-            "📱 Введите ваш номер телефона (необязательно).\n"
-            "_(Нажмите «Пропустить», если не хотите указывать)_"
-        ),
+        "intake_email": "📧 Введите ваш email (обязательное поле):",
+        "intake_email_invalid": "⚠️ Пожалуйста, введите корректный email адрес.",
+        "intake_phone": "📱 Введите ваш номер телефона (обязательное поле):",
+        "intake_phone_invalid": "⚠️ Пожалуйста, введите номер телефона (минимум 7 цифр).",
         "intake_contact_method": "Какой способ связи вы предпочитаете?",
+        "intake_protection": "Есть ли у вас статус временной защиты в Чехии?",
+        "intake_prague": "Ваш адрес регистрации — город Прага?",
+        "not_eligible_protection": (
+            "😔 К сожалению, в рамках данного проекта мы работаем только с беженцами, "
+            "имеющими статус временной защиты в Чехии."
+        ),
+        "not_eligible_prague": (
+            "😔 К сожалению, в рамках данного проекта мы работаем только с беженцами, "
+            "имеющими статус временной защиты в Чехии и проживающими в Праге."
+        ),
+        "btn_yes": "✅ Да",
+        "btn_no": "❌ Нет",
         "btn_skip": "⏭ Пропустить",
         "contact_phone": "📞 Телефон",
         "contact_viber": "💜 Viber",
@@ -147,7 +163,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "Kdykoli se vraťte — /start"
         ),
         "deleteme_notfound": "Žádná data nenalezena — možná jste se ještě nezaregistrovali.",
-        "intake_name": "Jak se jmenujete? (přezdívka je v pořádku)",
+        "intake_name": "Jak se jmenujete? (jméno a příjmení)",
         "intake_age": "Vyberte věkovou kategorii:",
         "intake_location": "Ve kterém městě / regionu se nacházíte?",
         "intake_format": "Jakou formu pomoci preferujete?",
@@ -178,15 +194,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_decline": "❌ Odmítám",
         "btn_callback": "📞 Zavolejte mi zpět",
         "btn_call_operator": "☎️ Zavolat operátorovi",
-        "intake_email": (
-            "📧 Zadejte svůj email pro potvrzení a připomenutí den před sezením.\n"
-            "_(Pokud nemáte email nebo nechcete uvádět — klikněte na «Přeskočit»)_"
-        ),
-        "intake_phone": (
-            "📱 Zadejte své telefonní číslo (nepovinné).\n"
-            "_(Klikněte na «Přeskočit», pokud nechcete uvádět)_"
-        ),
+        "intake_email": "📧 Zadejte svůj email (povinné pole):",
+        "intake_email_invalid": "⚠️ Prosím zadejte platnou emailovou adresu.",
+        "intake_phone": "📱 Zadejte své telefonní číslo (povinné pole):",
+        "intake_phone_invalid": "⚠️ Prosím zadejte telefonní číslo (minimálně 7 číslic).",
         "intake_contact_method": "Jaký způsob kontaktu preferujete?",
+        "intake_protection": "Máte status dočasné ochrany v České republice?",
+        "intake_prague": "Je vaše adresa registrace v Praze?",
+        "not_eligible_protection": (
+            "😔 Bohužel, v rámci tohoto projektu pracujeme pouze s uprchlíky, "
+            "kteří mají status dočasné ochrany v České republice."
+        ),
+        "not_eligible_prague": (
+            "😔 Bohužel, v rámci tohoto projektu pracujeme pouze s uprchlíky, "
+            "kteří mají status dočasné ochrany v ČR a žijí v Praze."
+        ),
+        "btn_yes": "✅ Ano",
+        "btn_no": "❌ Ne",
         "btn_skip": "⏭ Přeskočit",
         "contact_phone": "📞 Telefon",
         "contact_viber": "💜 Viber",
@@ -211,7 +235,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "You can always return — /start"
         ),
         "deleteme_notfound": "No data found — you may not have registered yet.",
-        "intake_name": "What is your name? (alias is fine)",
+        "intake_name": "What is your name? (first and last name)",
         "intake_age": "Please select your age category:",
         "intake_location": "Which city / region are you in?",
         "intake_format": "What support format works best for you?",
@@ -242,15 +266,23 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_decline": "❌ I decline",
         "btn_callback": "📞 Please call me back",
         "btn_call_operator": "☎️ Call operator",
-        "intake_email": (
-            "📧 Enter your email for a booking confirmation and a reminder the day before.\n"
-            "_(No email or prefer not to share? Tap «Skip»)_"
-        ),
-        "intake_phone": (
-            "📱 Enter your phone number (optional).\n"
-            "_(Tap «Skip» if you'd rather not share it)_"
-        ),
+        "intake_email": "📧 Enter your email (required):",
+        "intake_email_invalid": "⚠️ Please enter a valid email address.",
+        "intake_phone": "📱 Enter your phone number (required):",
+        "intake_phone_invalid": "⚠️ Please enter a phone number (at least 7 digits).",
         "intake_contact_method": "Which contact method do you prefer?",
+        "intake_protection": "Do you have temporary protection status in the Czech Republic?",
+        "intake_prague": "Is your registered address in Prague?",
+        "not_eligible_protection": (
+            "😔 Unfortunately, this project works only with refugees "
+            "who have temporary protection status in the Czech Republic."
+        ),
+        "not_eligible_prague": (
+            "😔 Unfortunately, this project works only with refugees "
+            "who have temporary protection status in the Czech Republic and live in Prague."
+        ),
+        "btn_yes": "✅ Yes",
+        "btn_no": "❌ No",
         "btn_skip": "⏭ Skip",
         "contact_phone": "📞 Phone",
         "contact_viber": "💜 Viber",

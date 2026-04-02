@@ -43,6 +43,13 @@ def format_keyboard(lang: str) -> InlineKeyboardMarkup:
     ]])
 
 
+def yes_no_keyboard(lang: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[[
+        InlineKeyboardButton(text=t(lang, "btn_yes"), callback_data="yn_yes"),
+        InlineKeyboardButton(text=t(lang, "btn_no"),  callback_data="yn_no"),
+    ]])
+
+
 def skip_keyboard(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[[
         InlineKeyboardButton(text=t(lang, "btn_skip"), callback_data="skip"),
