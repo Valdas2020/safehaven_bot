@@ -16,7 +16,7 @@ from fastapi import FastAPI, Request, Response
 
 import database as db
 from config import BOT_TOKEN, HOST, PORT, SPECIALIST_TG_IDS, WEBHOOK_PATH, WEBHOOK_SECRET, WEBHOOK_URL
-from handlers import admin, booking, fallback, gdpr, intake, post_visit, start, triage
+from handlers import admin, booking, fallback, gdpr, intake, post_visit, privacy, start, triage
 from middlewares.logging_mw import LoggingMiddleware
 
 logging.basicConfig(
@@ -36,6 +36,7 @@ bot = Bot(
 dp = Dispatcher(storage=MemoryStorage())
 dp.update.outer_middleware(LoggingMiddleware())
 dp.include_router(admin.router)
+dp.include_router(privacy.router)
 dp.include_router(post_visit.router)
 dp.include_router(start.router)
 dp.include_router(gdpr.router)

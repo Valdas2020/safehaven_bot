@@ -4,12 +4,21 @@ TEXTS: dict[str, dict[str, str]] = {
     "UA": {
         "lang_prompt": "Вітаємо! 👋\nОберіть мову спілкування:",
         "gdpr": (
-            "🔒 *Конфіденційність*\n\n"
-            "Ми збираємо мінімально необхідні дані для підбору спеціаліста.\n"
-            "Дані зберігаються безпечно і *не передаються третім особам*.\n\n"
-            "Ви погоджуєтесь із умовами обробки персональних даних?"
+            "🔒 *Конфіденційність та захист даних*\n\n"
+            "Ми збираємо:\n"
+            "• Ім'я або псевдонім, вік, місто\n"
+            "• Контактні дані (email, телефон) — за бажанням\n"
+            "• Опис вашої ситуації — *дані про ментальне здоров'я \\(ст\\. 9 GDPR\\)*\n\n"
+            "Дані використовуються виключно для підбору спеціаліста і *не передаються третім особам*\\.\n\n"
+            "Ви можете видалити всі свої дані командою /deleteme у будь\\-який час\\.\n\n"
+            "Ви надаєте *явну згоду* на обробку даних, включаючи дані про ментальне здоров'я?"
         ),
         "gdpr_decline": "Розуміємо ваш вибір. Якщо передумаєте — надішліть /start 💙",
+        "deleteme_confirm": (
+            "🗑 Всі ваші дані видалено з системи. Дякуємо, що довіряли нам 💙\n"
+            "Якщо захочете повернутися — /start"
+        ),
+        "deleteme_notfound": "Даних не знайдено — можливо, ви ще не реєструвались.",
         "intake_name": "Як вас звати? (можна псевдонім)",
         "intake_age": "Оберіть вікову категорію:",
         "intake_location": "У якому місті / регіоні ви знаходитесь?",
@@ -59,12 +68,21 @@ TEXTS: dict[str, dict[str, str]] = {
     "RU": {
         "lang_prompt": "Добро пожаловать! 👋\nВыберите язык:",
         "gdpr": (
-            "🔒 *Конфиденциальность*\n\n"
-            "Мы собираем минимальные данные для подбора специалиста.\n"
-            "Данные надёжно хранятся и *не передаются третьим лицам*.\n\n"
-            "Вы соглашаетесь с условиями обработки персональных данных?"
+            "🔒 *Конфиденциальность и защита данных*\n\n"
+            "Мы собираем:\n"
+            "• Имя или псевдоним, возраст, город\n"
+            "• Контактные данные \\(email, телефон\\) — по желанию\n"
+            "• Описание вашей ситуации — *данные о ментальном здоровье \\(ст\\. 9 GDPR\\)*\n\n"
+            "Данные используются исключительно для подбора специалиста и *не передаются третьим лицам*\\.\n\n"
+            "Вы можете удалить все свои данные командой /deleteme в любое время\\.\n\n"
+            "Вы даёте *явное согласие* на обработку данных, включая данные о ментальном здоровье?"
         ),
         "gdpr_decline": "Понимаем. Если передумаете — отправьте /start 💙",
+        "deleteme_confirm": (
+            "🗑 Все ваши данные удалены из системы. Спасибо, что доверяли нам 💙\n"
+            "Если захотите вернуться — /start"
+        ),
+        "deleteme_notfound": "Данные не найдены — возможно, вы ещё не регистрировались.",
         "intake_name": "Как вас зовут? (можно псевдоним)",
         "intake_age": "Выберите возрастную категорию:",
         "intake_location": "В каком городе / регионе вы находитесь?",
@@ -114,12 +132,21 @@ TEXTS: dict[str, dict[str, str]] = {
     "CZ": {
         "lang_prompt": "Vítejte! 👋\nVyberte jazyk:",
         "gdpr": (
-            "🔒 *Ochrana soukromí*\n\n"
-            "Shromažďujeme minimální údaje pro přidělení specialisty.\n"
-            "Údaje jsou bezpečně uloženy a *nejsou sdíleny s třetími stranami*.\n\n"
-            "Souhlasíte se zpracováním osobních údajů?"
+            "🔒 *Ochrana osobních údajů*\n\n"
+            "Shromažďujeme:\n"
+            "• Jméno nebo přezdívku, věk, město\n"
+            "• Kontaktní údaje \\(email, telefon\\) — volitelně\n"
+            "• Popis vaší situace — *údaje o duševním zdraví \\(čl\\. 9 GDPR\\)*\n\n"
+            "Údaje slouží výhradně k přidělení specialisty a *nejsou sdíleny s třetími stranami*\\.\n\n"
+            "Všechna vaše data můžete kdykoli smazat příkazem /deleteme\\.\n\n"
+            "Udělujete *výslovný souhlas* se zpracováním údajů včetně údajů o duševním zdraví?"
         ),
         "gdpr_decline": "Rozumíme. Kdykoli napište /start 💙",
+        "deleteme_confirm": (
+            "🗑 Všechna vaše data byla smazána. Děkujeme za důvěru 💙\n"
+            "Kdykoli se vraťte — /start"
+        ),
+        "deleteme_notfound": "Žádná data nenalezena — možná jste se ještě nezaregistrovali.",
         "intake_name": "Jak se jmenujete? (přezdívka je v pořádku)",
         "intake_age": "Vyberte věkovou kategorii:",
         "intake_location": "Ve kterém městě / regionu se nacházíte?",
@@ -169,12 +196,21 @@ TEXTS: dict[str, dict[str, str]] = {
     "EN": {
         "lang_prompt": "Welcome! 👋\nSelect your language:",
         "gdpr": (
-            "🔒 *Privacy Notice*\n\n"
-            "We collect minimal data to match you with a specialist.\n"
-            "It is stored securely and *never shared with third parties*.\n\n"
-            "Do you agree to the data processing terms?"
+            "🔒 *Privacy & Data Protection*\n\n"
+            "We collect:\n"
+            "• Name or alias, age, city\n"
+            "• Contact details \\(email, phone\\) — optional\n"
+            "• Description of your situation — *mental health data \\(Art\\. 9 GDPR\\)*\n\n"
+            "Data is used solely to match you with a specialist and *never shared with third parties*\\.\n\n"
+            "You can delete all your data at any time with /deleteme\\.\n\n"
+            "Do you give *explicit consent* to process your data, including mental health information?"
         ),
         "gdpr_decline": "We understand. Send /start whenever you're ready 💙",
+        "deleteme_confirm": (
+            "🗑 All your data has been deleted. Thank you for trusting us 💙\n"
+            "You can always return — /start"
+        ),
+        "deleteme_notfound": "No data found — you may not have registered yet.",
         "intake_name": "What is your name? (alias is fine)",
         "intake_age": "Please select your age category:",
         "intake_location": "Which city / region are you in?",

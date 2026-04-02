@@ -158,6 +158,27 @@ async def set_callback_requested(user_id: int) -> None:
     )
 
 
+async def delete_user_data(telegram_id: int) -> bool:
+    """
+    Hard-delete all personal data for a user (GDPR Art. 17 right to erasure).
+    Returns True if the user existed and was deleted, False if not found.
+    """
+    user = await get_user(telegram_id)
+    if not user:
+        return False
+    user_id = user["id"]
+    async with pool().acquire() as conn:
+        await conn.execute("""
+            DELETE FROM post_visit
+            WHERE booking_id IN (SELECT id FROM bookings WHERE user_id = $1)
+        """, user_id)
+        await conn.execute("DELETE FROM bookings WHERE user_id = $1", user_id)
+        await conn.execute("DELETE FROM cases WHERE user_id = $1", user_id)
+        await conn.execute("DELETE FROM users WHERE id = $1", user_id)
+    logger.info("GDPR erasure: deleted all data for telegram_id=%s", telegram_id)
+    return True
+
+
 async def create_post_visit(
     booking_id: int,
     status: str,
