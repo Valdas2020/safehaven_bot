@@ -42,6 +42,24 @@ async def _send_reminder(bot, telegram_id: int, text: str, send_at: datetime) ->
         logger.error("Failed to send reminder to %s: %s", telegram_id, exc)
 
 
+OPERATOR_PHONE_DISPLAY = "+420 736 101 609"
+
+OPERATOR_MSG = {
+    "UA": f"☎️ Оператор: {OPERATOR_PHONE_DISPLAY}",
+    "RU": f"☎️ Оператор: {OPERATOR_PHONE_DISPLAY}",
+    "CZ": f"☎️ Operátor: {OPERATOR_PHONE_DISPLAY}",
+    "EN": f"☎️ Operator: {OPERATOR_PHONE_DISPLAY}",
+}
+
+
+@router.callback_query(UserFlow.slot_selection, F.data == "call_operator")
+async def cb_call_operator(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data.get("lang", "RU")
+    await callback.message.answer(OPERATOR_MSG.get(lang, OPERATOR_MSG["RU"]))
+    await callback.answer()
+
+
 @router.callback_query(UserFlow.slot_selection, F.data == "slot_callback")
 async def cb_callback_request(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
