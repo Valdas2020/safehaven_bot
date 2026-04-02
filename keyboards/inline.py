@@ -69,6 +69,8 @@ def triage_keyboard(lang: str) -> InlineKeyboardMarkup:
     ])
 
 
+OPERATOR_PHONE = "tel:+420736101609"
+
 def slots_keyboard(slots: list[Slot], lang: str) -> InlineKeyboardMarkup:
     rows = []
     for i, slot in enumerate(slots):
@@ -77,4 +79,5 @@ def slots_keyboard(slots: list[Slot], lang: str) -> InlineKeyboardMarkup:
         label = f"{slot.label(lang)} — {spec}"
         rows.append([InlineKeyboardButton(text=label, callback_data=f"slot_{i}")])
     rows.append([InlineKeyboardButton(text=t(lang, "btn_callback"), callback_data="slot_callback")])
+    rows.append([InlineKeyboardButton(text=t(lang, "btn_call_operator"), url=OPERATOR_PHONE)])
     return InlineKeyboardMarkup(inline_keyboard=rows)

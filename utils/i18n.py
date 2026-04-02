@@ -40,6 +40,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_accept": "✅ Погоджуюсь",
         "btn_decline": "❌ Відмовляюсь",
         "btn_callback": "📞 Передзвоніть мені",
+        "btn_call_operator": "☎️ Зателефонувати оператору",
         "intake_email": (
             "📧 Введіть ваш email для підтвердження та нагадування за день до сесії.\n"
             "_(Якщо у вас немає email або не хочете вказувати — натисніть «Пропустити»)_"
@@ -94,6 +95,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_accept": "✅ Соглашаюсь",
         "btn_decline": "❌ Отказываюсь",
         "btn_callback": "📞 Перезвоните мне",
+        "btn_call_operator": "☎️ Позвонить оператору",
         "intake_email": (
             "📧 Введите ваш email для подтверждения и напоминания за день до сессии.\n"
             "_(Если у вас нет email или не хотите указывать — нажмите «Пропустить»)_"
@@ -148,6 +150,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_accept": "✅ Souhlasím",
         "btn_decline": "❌ Odmítám",
         "btn_callback": "📞 Zavolejte mi zpět",
+        "btn_call_operator": "☎️ Zavolat operátorovi",
         "intake_email": (
             "📧 Zadejte svůj email pro potvrzení a připomenutí den před sezením.\n"
             "_(Pokud nemáte email nebo nechcete uvádět — klikněte na «Přeskočit»)_"
@@ -202,6 +205,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_accept": "✅ I agree",
         "btn_decline": "❌ I decline",
         "btn_callback": "📞 Please call me back",
+        "btn_call_operator": "☎️ Call operator",
         "intake_email": (
             "📧 Enter your email for a booking confirmation and a reminder the day before.\n"
             "_(No email or prefer not to share? Tap «Skip»)_"
