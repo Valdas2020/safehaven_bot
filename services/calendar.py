@@ -32,27 +32,45 @@ PRAGUE_TZ = ZoneInfo("Europe/Prague")
 # Add/remove specialists here. calendar_id = Google Calendar email address.
 SPECIALISTS: dict[str, dict] = {
     "psych_adult_1": {
-        "calendar_id": "ralph.drogheda@gmail.com",          # ← must share with service account
-        "email": "ralph.drogheda@gmail.com",                # ← booking notification address
-        "name": "Psychologist (Adults)",
+        "calendar_id": "ralph.drogheda@gmail.com",
+        "email": "ralph.drogheda@gmail.com",
+        "name": "Psychologist (Adults)",          # used in emails / calendar events
+        "name_i18n": {
+            "UA": "Психолог (дорослі)",
+            "RU": "Психолог (взрослые)",
+            "CZ": "Psycholog (dospělí)",
+            "EN": "Psychologist (Adults)",
+        },
         "type": "psychologist",
         "age_group": ["adult"],
         "triage_level": ["normal"],
         "lang": ["EN", "CZ", "UA", "RU"],
     },
     "psych_adult_crisis": {
-        "calendar_id": "timbookedtwo2@gmail.com",           # ← must share with service account
-        "email": "timbookedtwo2@gmail.com",                 # ← booking notification address
+        "calendar_id": "timbookedtwo2@gmail.com",
+        "email": "timbookedtwo2@gmail.com",
         "name": "Psychologist (Adults — Crisis)",
+        "name_i18n": {
+            "UA": "Психолог — Кризис (дорослі)",
+            "RU": "Психолог — Кризис (взрослые)",
+            "CZ": "Psycholog — Krize (dospělí)",
+            "EN": "Psychologist — Crisis (Adults)",
+        },
         "type": "psychologist",
         "age_group": ["adult"],
         "triage_level": ["normal", "urgent"],
         "lang": ["EN", "CZ", "UA", "RU"],
     },
     "psych_children": {
-        "calendar_id": "yurkevichirina@gmail.com",          # ← must share with service account
-        "email": "yurkevichirina@gmail.com",                # ← booking notification address
+        "calendar_id": "yurkevichirina@gmail.com",
+        "email": "yurkevichirina@gmail.com",
         "name": "Psychologist (Children)",
+        "name_i18n": {
+            "UA": "Психолог (діти)",
+            "RU": "Психолог (дети)",
+            "CZ": "Psycholog (děti)",
+            "EN": "Psychologist (Children)",
+        },
         "type": "psychologist",
         "age_group": ["child"],
         "triage_level": ["normal"],
@@ -63,9 +81,11 @@ SPECIALISTS: dict[str, dict] = {
 SLOT_DURATION  = timedelta(minutes=60)  # booked in calendar (45 min session + 15 min break)
 SLOT_DISPLAY   = 45                     # minutes shown to user
 LOOK_AHEAD_DAYS = 7
-TOP_SLOTS = 3
+TOP_SLOTS = 4    # 2 regular + 2 crisis
+MIN_LEAD_HOURS = 4  # first slot no sooner than 4h from now
 WORK_START = 9   # first slot starts 09:00 Prague
 WORK_END   = 21  # last slot starts 20:00, ends 21:00 (displayed as 20:00–20:45)
+AM_CUTOFF  = 13  # slots before 13:00 Prague are "AM"
 
 
 # ── Data types ────────────────────────────────────────────────────────────────
@@ -151,11 +171,12 @@ def _sync_get_slots(lang: str, age_cat: str, triage_level: str) -> list[Slot]:
     now      = datetime.now(timezone.utc).replace(second=0, microsecond=0)
     time_max = now + timedelta(days=LOOK_AHEAD_DAYS)
 
-    # Round cursor up to the next full hour so slots always start on the hour
-    if now.minute != 0:
-        cursor = now.replace(minute=0, microsecond=0) + timedelta(hours=1)
+    # First slot must be at least MIN_LEAD_HOURS from now; round up to full hour
+    min_start = now + timedelta(hours=MIN_LEAD_HOURS)
+    if min_start.minute != 0:
+        cursor = min_start.replace(minute=0, microsecond=0) + timedelta(hours=1)
     else:
-        cursor = now
+        cursor = min_start
 
     # Fetch free/busy for matched specialists only
     items = [{"id": SPECIALISTS[sp_id]["calendar_id"]} for sp_id in matched_ids]
@@ -183,8 +204,7 @@ def _sync_get_slots(lang: str, age_cat: str, triage_level: str) -> list[Slot]:
             for b in periods
         ]
 
-    # Round-robin slot generation across matched specialists
-    # Walk in 60-min steps; cycle through specialists for even distribution
+    # Collect all free slots per specialist
     slots_per_sp: dict[str, list[Slot]] = {sp_id: [] for sp_id in matched_ids}
 
     while cursor < time_max:
@@ -200,18 +220,25 @@ def _sync_get_slots(lang: str, age_cat: str, triage_level: str) -> list[Slot]:
                     ))
         cursor += SLOT_DURATION
 
-    # Interleave slots round-robin: sp1[0], sp2[0], sp3[0], sp1[1], ...
-    all_slots: list[Slot] = []
-    max_len = max((len(v) for v in slots_per_sp.values()), default=0)
-    for i in range(max_len):
-        for sp_id in matched_ids:
-            if i < len(slots_per_sp[sp_id]):
-                all_slots.append(slots_per_sp[sp_id][i])
-        if len(all_slots) >= TOP_SLOTS:
-            break
+    # For each specialist pick 1 AM slot (< 13:00 Prague) + 1 PM slot (≥ 13:00 Prague)
+    def _pick_am_pm(slots: list[Slot]) -> list[Slot]:
+        am = next((s for s in slots if s.start.astimezone(PRAGUE_TZ).hour < AM_CUTOFF), None)
+        pm = next((s for s in slots if s.start.astimezone(PRAGUE_TZ).hour >= AM_CUTOFF), None)
+        return [s for s in [am, pm] if s is not None]
 
-    all_slots.sort(key=lambda s: s.start)
-    return all_slots[:TOP_SLOTS]
+    # Separate normal vs urgent-capable specialists, pick AM/PM from each group
+    normal_ids  = [sp for sp in matched_ids if "normal"  in SPECIALISTS[sp]["triage_level"]
+                                            and "urgent" not in SPECIALISTS[sp]["triage_level"]]
+    crisis_ids  = [sp for sp in matched_ids if "urgent"  in SPECIALISTS[sp]["triage_level"]]
+
+    selected: list[Slot] = []
+    for sp_id in normal_ids:
+        selected.extend(_pick_am_pm(slots_per_sp[sp_id]))
+    for sp_id in crisis_ids:
+        selected.extend(_pick_am_pm(slots_per_sp[sp_id]))
+
+    selected.sort(key=lambda s: s.start)
+    return selected[:TOP_SLOTS]
 
 
 def create_calendar_event(
