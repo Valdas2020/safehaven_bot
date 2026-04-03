@@ -21,7 +21,58 @@ EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 PHONE_RE = re.compile(r"\d{7,}")  # at least 7 digits anywhere in the string
 
 
-# ── Step 1: Name ─────────────────────────────────────────────────────────────
+# ── Step 1: Prague eligibility (state set by gdpr.py) ────────────────────────
+
+@router.callback_query(UserFlow.intake_prague, F.data.in_({"yn_yes", "yn_no"}))
+async def cb_prague(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
+
+    if callback.data == "yn_no":
+        await callback.message.answer(t(lang, "not_eligible_prague"))
+        await state.clear()
+        await callback.answer()
+        logger.info("user_id=%s not eligible: not in Prague", callback.from_user.id)
+        return
+
+    await callback.message.answer(
+        t(lang, "intake_protection"),
+        reply_markup=yes_no_keyboard(lang),
+    )
+    await state.set_state(UserFlow.intake_protection)
+    await callback.answer()
+
+
+# ── Step 2: Temporary protection status ──────────────────────────────────────
+
+@router.callback_query(UserFlow.intake_protection, F.data.in_({"yn_yes", "yn_no"}))
+async def cb_protection(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
+
+    if callback.data == "yn_no":
+        await callback.message.answer(t(lang, "not_eligible_protection"))
+        await state.clear()
+        await callback.answer()
+        logger.info("user_id=%s not eligible: no protection status", callback.from_user.id)
+        return
+
+    await callback.message.answer(t(lang, "intake_name"))
+    await state.set_state(UserFlow.intake_name)
+    await callback.answer()
+
+
+# ── Step 3: Name ──────────────────────────────────────────────────────────────
 
 @router.message(UserFlow.intake_name)
 async def msg_name(message: Message, state: FSMContext) -> None:
@@ -36,7 +87,7 @@ async def msg_name(message: Message, state: FSMContext) -> None:
     await state.set_state(UserFlow.intake_age)
 
 
-# ── Step 2: Age ───────────────────────────────────────────────────────────────
+# ── Step 4: Age ───────────────────────────────────────────────────────────────
 
 @router.callback_query(UserFlow.intake_age, F.data.in_({"age_child", "age_adult"}))
 async def cb_age(callback: CallbackQuery, state: FSMContext) -> None:
@@ -47,27 +98,16 @@ async def cb_age(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(age_cat=age_cat)
     await db.upsert_user(callback.from_user.id, age_cat=age_cat)
 
-    await callback.message.edit_text(t(lang, "intake_location"), parse_mode="Markdown")
-    await state.set_state(UserFlow.intake_location)
+    try:
+        await callback.message.edit_reply_markup(reply_markup=None)
+    except TelegramBadRequest:
+        pass
+    await callback.message.answer(t(lang, "intake_format"), reply_markup=format_keyboard(lang))
+    await state.set_state(UserFlow.intake_format)
     await callback.answer()
 
 
-# ── Step 3: Location ──────────────────────────────────────────────────────────
-
-@router.message(UserFlow.intake_location)
-async def msg_location(message: Message, state: FSMContext) -> None:
-    data = await state.get_data()
-    lang = data["lang"]
-    location = message.text.strip()[:128]
-
-    await state.update_data(location=location)
-    await db.upsert_user(message.from_user.id, location=location)
-
-    await message.answer(t(lang, "intake_format"), reply_markup=format_keyboard(lang))
-    await state.set_state(UserFlow.intake_format)
-
-
-# ── Step 4: Format ────────────────────────────────────────────────────────────
+# ── Step 5: Format ────────────────────────────────────────────────────────────
 
 @router.callback_query(UserFlow.intake_format, F.data.in_({"fmt_online", "fmt_in_person"}))
 async def cb_format(callback: CallbackQuery, state: FSMContext) -> None:
@@ -87,7 +127,7 @@ async def cb_format(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.answer()
 
 
-# ── Step 5: Email (required) ──────────────────────────────────────────────────
+# ── Step 6: Email (required) ──────────────────────────────────────────────────
 
 @router.message(UserFlow.intake_email)
 async def msg_email(message: Message, state: FSMContext) -> None:
@@ -106,7 +146,7 @@ async def msg_email(message: Message, state: FSMContext) -> None:
     await state.set_state(UserFlow.intake_phone)
 
 
-# ── Step 6: Phone (required) ──────────────────────────────────────────────────
+# ── Step 7: Phone (required) ──────────────────────────────────────────────────
 
 @router.message(UserFlow.intake_phone)
 async def msg_phone(message: Message, state: FSMContext) -> None:
@@ -125,7 +165,7 @@ async def msg_phone(message: Message, state: FSMContext) -> None:
     await state.set_state(UserFlow.intake_contact_method)
 
 
-# ── Step 7: Contact method ────────────────────────────────────────────────────
+# ── Step 8: Contact method → triage ──────────────────────────────────────────
 
 @router.callback_query(
     UserFlow.intake_contact_method,
@@ -144,60 +184,12 @@ async def cb_contact_method(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
         pass
-    await callback.message.answer(t(lang, "intake_protection"), reply_markup=yes_no_keyboard(lang))
-    await state.set_state(UserFlow.intake_protection)
-    await callback.answer()
-
-
-# ── Step 8: Temporary protection status ──────────────────────────────────────
-
-@router.callback_query(UserFlow.intake_protection, F.data.in_({"yn_yes", "yn_no"}))
-async def cb_protection(callback: CallbackQuery, state: FSMContext) -> None:
-    data = await state.get_data()
-    lang = data["lang"]
-
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except TelegramBadRequest:
-        pass
-
-    if callback.data == "yn_no":
-        await callback.message.answer(t(lang, "not_eligible_protection"))
-        await state.clear()
-        await callback.answer()
-        logger.info("user_id=%s not eligible: no protection status", callback.from_user.id)
-        return
-
-    await callback.message.answer(t(lang, "intake_prague"), reply_markup=yes_no_keyboard(lang))
-    await state.set_state(UserFlow.intake_prague)
-    await callback.answer()
-
-
-# ── Step 9: Prague residence ──────────────────────────────────────────────────
-
-@router.callback_query(UserFlow.intake_prague, F.data.in_({"yn_yes", "yn_no"}))
-async def cb_prague(callback: CallbackQuery, state: FSMContext) -> None:
-    data = await state.get_data()
-    lang = data["lang"]
-
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except TelegramBadRequest:
-        pass
-
-    if callback.data == "yn_no":
-        await callback.message.answer(t(lang, "not_eligible_prague"))
-        await state.clear()
-        await callback.answer()
-        logger.info("user_id=%s not eligible: not in Prague", callback.from_user.id)
-        return
-
     await _go_to_triage(callback.message, lang, state)
     await callback.answer()
     logger.info("user_id=%s completed intake", callback.from_user.id)
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ── Helper ────────────────────────────────────────────────────────────────────
 
 async def _go_to_triage(message, lang: str, state: FSMContext) -> None:
     from keyboards.inline import triage_keyboard as _triage_kb

@@ -5,7 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 import database as db
-from keyboards.inline import gdpr_keyboard
+from keyboards.inline import gdpr_keyboard, yes_no_keyboard
 from states.user_states import UserFlow
 from utils.i18n import t
 
@@ -37,8 +37,11 @@ async def cb_gdpr_accept(callback: CallbackQuery, state: FSMContext) -> None:
 
     await db.upsert_user(callback.from_user.id, gdpr_accepted=True)
 
-    await callback.message.edit_text(t(lang, "intake_name"), parse_mode="Markdown")
-    await state.set_state(UserFlow.intake_name)
+    await callback.message.edit_text(
+        t(lang, "intake_prague"),
+        reply_markup=yes_no_keyboard(lang),
+    )
+    await state.set_state(UserFlow.intake_prague)
     await callback.answer()
 
 
