@@ -18,7 +18,8 @@ logger = logging.getLogger(__name__)
 router = Router(name="intake")
 
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
-PHONE_RE = re.compile(r"\d{7,}")  # at least 7 digits anywhere in the string
+# Czech format: +420 or 420 followed by exactly 9 digits (spaces/hyphens allowed)
+PHONE_RE = re.compile(r"^\+?420[\s\-]?\d{3}[\s\-]?\d{3}[\s\-]?\d{3}$")
 
 
 # ── Step 1: Prague eligibility (state set by gdpr.py) ────────────────────────

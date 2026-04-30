@@ -6,7 +6,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "gdpr": (
             "🔒 *Конфіденційність та захист даних*\n\n"
             "Ми збираємо:\n"
-            "• Ім'я, вік, місто\n"
+            "• Ім'я, прізвище, вік, місто\n"
             "• Контактні дані (email, номер телефону)\n"
             "• Опис вашої ситуації — *дані про ментальне здоров'я (ст. 9 GDPR)*\n\n"
             "Дані використовуються виключно для підбору спеціаліста і *не передаються третім особам*.\n\n"
@@ -39,8 +39,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "slot_callback": "📞 Передзвоніть мені",
         "callback_saved": "📞 Зрозуміло! Ми зателефонуємо вам найближчим часом.",
         "no_slots": "😔 Наразі немає вільних слотів. Ми зв'яжемося з вами вручну.",
-        "age_child": "Дитина (до 18)",
-        "age_adult": "Дорослий (18+)",
+        "age_child": "Дитина (до 14 років)",
+        "age_adult": "Підліток та дорослий (15+)",
         "format_online": "Онлайн",
         "format_in_person": "Особисто",
         "cat_crisis": "🆘 Криза",
@@ -52,14 +52,14 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_call_operator": "☎️ Зателефонувати оператору",
         "intake_email": "📧 Введіть ваш email (обов'язкове поле):",
         "intake_email_invalid": "⚠️ Будь ласка, введіть коректний email адрес.",
-        "intake_phone": "📱 Введіть ваш номер телефону (обов'язкове поле):",
-        "intake_phone_invalid": "⚠️ Будь ласка, введіть номер телефону (мінімум 7 цифр).",
+        "intake_phone": "📱 Введіть ваш номер телефону в Чехії (обов'язкове поле):\nФормат: +420 XXX XXX XXX",
+        "intake_phone_invalid": "⚠️ Введіть номер телефону у форматі +420 XXX XXX XXX",
         "intake_contact_method": "Який спосіб зв'язку ви надаєте перевагу?",
-        "intake_protection": "Чи маєте ви статус тимчасового захисту в Чехії?",
+        "intake_protection": "Чи є у Вас українське громадянство?",
         "intake_prague": "Ваша адреса реєстрації — місто Прага?",
         "not_eligible_protection": (
             "😔 На жаль, в рамках даного проекту ми працюємо лише з біженцями, "
-            "які мають статус тимчасового захисту в Чехії."
+            "які мають українське громадянство."
         ),
         "not_eligible_prague": (
             "😔 На жаль, в рамках даного проекту ми працюємо лише з біженцями, "
@@ -78,7 +78,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "gdpr": (
             "🔒 *Конфиденциальность и защита данных*\n\n"
             "Мы собираем:\n"
-            "• Имя, возраст, город\n"
+            "• Имя, фамилию, возраст, город\n"
             "• Контактные данные (email, номер телефона)\n"
             "• Описание вашей ситуации — *данные о ментальном здоровье (ст. 9 GDPR)*\n\n"
             "Данные используются исключительно для подбора специалиста и *не передаются третьим лицам*.\n\n"
@@ -111,8 +111,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "slot_callback": "📞 Перезвоните мне",
         "callback_saved": "📞 Понял! Мы перезвоним вам в ближайшее время.",
         "no_slots": "😔 Свободных слотов пока нет. Мы свяжемся вручную.",
-        "age_child": "Ребёнок (до 18)",
-        "age_adult": "Взрослый (18+)",
+        "age_child": "Ребёнок (до 14 лет)",
+        "age_adult": "Подростки и взрослые (15+)",
         "format_online": "Онлайн",
         "format_in_person": "Лично",
         "cat_crisis": "🆘 Кризис",
@@ -124,14 +124,14 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_call_operator": "☎️ Позвонить оператору",
         "intake_email": "📧 Введите ваш email (обязательное поле):",
         "intake_email_invalid": "⚠️ Пожалуйста, введите корректный email адрес.",
-        "intake_phone": "📱 Введите ваш номер телефона (обязательное поле):",
-        "intake_phone_invalid": "⚠️ Пожалуйста, введите номер телефона (минимум 7 цифр).",
+        "intake_phone": "📱 Введите ваш номер телефона в Чехии (обязательное поле):\nФормат: +420 XXX XXX XXX",
+        "intake_phone_invalid": "⚠️ Введите номер телефона в формате +420 XXX XXX XXX",
         "intake_contact_method": "Какой способ связи вы предпочитаете?",
-        "intake_protection": "Есть ли у вас статус временной защиты в Чехии?",
+        "intake_protection": "Есть ли у Вас украинское гражданство?",
         "intake_prague": "Ваш адрес регистрации — город Прага?",
         "not_eligible_protection": (
             "😔 К сожалению, в рамках данного проекта мы работаем только с беженцами, "
-            "имеющими статус временной защиты в Чехии."
+            "имеющими украинское гражданство."
         ),
         "not_eligible_prague": (
             "😔 К сожалению, в рамках данного проекта мы работаем только с беженцами, "
@@ -150,7 +150,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "gdpr": (
             "🔒 *Ochrana osobních údajů*\n\n"
             "Shromažďujeme:\n"
-            "• Jméno, věk, město\n"
+            "• Jméno, příjmení, věk, město\n"
             "• Kontaktní údaje (email, telefonní číslo)\n"
             "• Popis vaší situace — *údaje o duševním zdraví (čl. 9 GDPR)*\n\n"
             "Údaje slouží výhradně k přidělení specialisty a *nejsou sdíleny s třetími stranami*.\n\n"
@@ -183,8 +183,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "slot_callback": "📞 Zavolejte mi zpět",
         "callback_saved": "📞 Rozumím! Zavoláme vám co nejdříve.",
         "no_slots": "😔 Momentálně nejsou volné termíny. Ozveme se ručně.",
-        "age_child": "Dítě (do 18)",
-        "age_adult": "Dospělý (18+)",
+        "age_child": "Dítě (do 14 let)",
+        "age_adult": "Teenager a dospělý (15+)",
         "format_online": "Online",
         "format_in_person": "Osobně",
         "cat_crisis": "🆘 Krize",
@@ -196,14 +196,14 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_call_operator": "☎️ Zavolat operátorovi",
         "intake_email": "📧 Zadejte svůj email (povinné pole):",
         "intake_email_invalid": "⚠️ Prosím zadejte platnou emailovou adresu.",
-        "intake_phone": "📱 Zadejte své telefonní číslo (povinné pole):",
-        "intake_phone_invalid": "⚠️ Prosím zadejte telefonní číslo (minimálně 7 číslic).",
+        "intake_phone": "📱 Zadejte své telefonní číslo v České republice (povinné pole):\nFormát: +420 XXX XXX XXX",
+        "intake_phone_invalid": "⚠️ Zadejte telefonní číslo ve formátu +420 XXX XXX XXX",
         "intake_contact_method": "Jaký způsob kontaktu preferujete?",
-        "intake_protection": "Máte status dočasné ochrany v České republice?",
+        "intake_protection": "Máte ukrajinské občanství?",
         "intake_prague": "Je vaše adresa registrace v Praze?",
         "not_eligible_protection": (
-            "😔 Bohužel, v rámci tohoto projektu pracujeme pouze s uprchlíky, "
-            "kteří mají status dočasné ochrany v České republice."
+            "😔 Bohužel, v rámci tohoto projektu pracujeme pouze s uprchlíky "
+            "s ukrajinským občanstvím."
         ),
         "not_eligible_prague": (
             "😔 Bohužel, v rámci tohoto projektu pracujeme pouze s uprchlíky, "
@@ -222,7 +222,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "gdpr": (
             "🔒 *Privacy & Data Protection*\n\n"
             "We collect:\n"
-            "• Name, age, city\n"
+            "• First name, last name, age, city\n"
             "• Contact details (email, phone number)\n"
             "• Description of your situation — *mental health data (Art. 9 GDPR)*\n\n"
             "Data is used solely to match you with a specialist and *never shared with third parties*.\n\n"
@@ -255,8 +255,8 @@ TEXTS: dict[str, dict[str, str]] = {
         "slot_callback": "📞 Please call me back",
         "callback_saved": "📞 Got it! We will call you back shortly.",
         "no_slots": "😔 No available slots right now. We'll reach out manually.",
-        "age_child": "Child (under 18)",
-        "age_adult": "Adult (18+)",
+        "age_child": "Child (under 14)",
+        "age_adult": "Teenager and adult (15+)",
         "format_online": "Online",
         "format_in_person": "In-person",
         "cat_crisis": "🆘 Crisis",
@@ -268,14 +268,14 @@ TEXTS: dict[str, dict[str, str]] = {
         "btn_call_operator": "☎️ Call operator",
         "intake_email": "📧 Enter your email (required):",
         "intake_email_invalid": "⚠️ Please enter a valid email address.",
-        "intake_phone": "📱 Enter your phone number (required):",
-        "intake_phone_invalid": "⚠️ Please enter a phone number (at least 7 digits).",
+        "intake_phone": "📱 Enter your Czech phone number (required):\nFormat: +420 XXX XXX XXX",
+        "intake_phone_invalid": "⚠️ Please enter a phone number in format +420 XXX XXX XXX",
         "intake_contact_method": "Which contact method do you prefer?",
-        "intake_protection": "Do you have temporary protection status in the Czech Republic?",
+        "intake_protection": "Do you have Ukrainian citizenship?",
         "intake_prague": "Is your registered address in Prague?",
         "not_eligible_protection": (
             "😔 Unfortunately, this project works only with refugees "
-            "who have temporary protection status in the Czech Republic."
+            "who have Ukrainian citizenship."
         ),
         "not_eligible_prague": (
             "😔 Unfortunately, this project works only with refugees "
