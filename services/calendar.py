@@ -34,7 +34,7 @@ SPECIALISTS: dict[str, dict] = {
     "psych_adult_1": {
         "calendar_id": "ralph.drogheda@gmail.com",
         "email": "ralph.drogheda@gmail.com",
-        "name": "Psychologist (Adults)",          # used in emails / calendar events
+        "name": "Psychologist (Adults)",
         "name_i18n": {
             "UA": "Психолог (дорослі)",
             "RU": "Психолог (взрослые)",
@@ -42,6 +42,8 @@ SPECIALISTS: dict[str, dict] = {
             "EN": "Psychologist (Adults)",
         },
         "type": "psychologist",
+        "slot_minutes": 60,     # 45 min session + 15 min buffer
+        "display_minutes": 45,
         "age_group": ["adult"],
         "triage_level": ["normal"],
         "lang": ["EN", "CZ", "UA", "RU"],
@@ -57,6 +59,8 @@ SPECIALISTS: dict[str, dict] = {
             "EN": "Psychologist — Crisis (Adults)",
         },
         "type": "psychologist",
+        "slot_minutes": 60,     # 45 min session + 15 min buffer
+        "display_minutes": 45,
         "age_group": ["adult"],
         "triage_level": ["normal", "urgent"],
         "lang": ["EN", "CZ", "UA", "RU"],
@@ -72,14 +76,18 @@ SPECIALISTS: dict[str, dict] = {
             "EN": "Psychologist (Children)",
         },
         "type": "psychologist",
+        "slot_minutes": 60,     # 45 min session + 15 min buffer
+        "display_minutes": 45,
         "age_group": ["child"],
         "triage_level": ["normal"],
         "lang": ["EN", "CZ", "UA", "RU"],
     },
+    # IKP specialists: add here with slot_minutes=45, display_minutes=30
 }
 
-SLOT_DURATION  = timedelta(minutes=60)  # booked in calendar (45 min session + 15 min break)
-SLOT_DISPLAY   = 45                     # minutes shown to user
+# Fallback defaults (each specialist overrides via slot_minutes / display_minutes)
+SLOT_DURATION  = timedelta(minutes=60)
+SLOT_DISPLAY   = 45
 LOOK_AHEAD_DAYS = 7
 TOP_SLOTS = 4    # 2 regular + 2 crisis
 MIN_LEAD_HOURS = 4  # first slot no sooner than 4h from now
@@ -204,21 +212,26 @@ def _sync_get_slots(lang: str, age_cat: str, triage_level: str) -> list[Slot]:
             for b in periods
         ]
 
-    # Collect all free slots per specialist
-    slots_per_sp: dict[str, list[Slot]] = {sp_id: [] for sp_id in matched_ids}
-
-    while cursor < time_max:
-        if _is_working_hour(cursor):
-            slot_end = cursor + SLOT_DURATION
-            for sp_id in matched_ids:
-                if not any(b_start < slot_end and b_end > cursor for b_start, b_end in busy[sp_id]):
-                    slots_per_sp[sp_id].append(Slot(
+    # Collect all free slots per specialist (each uses its own slot duration)
+    slots_per_sp: dict[str, list[Slot]] = {}
+    for sp_id in matched_ids:
+        sp = SPECIALISTS[sp_id]
+        dur     = timedelta(minutes=sp.get("slot_minutes",   SLOT_DURATION.seconds // 60))
+        display = sp.get("display_minutes", SLOT_DISPLAY)
+        sp_cursor = cursor
+        sp_slots: list[Slot] = []
+        while sp_cursor < time_max:
+            if _is_working_hour(sp_cursor):
+                slot_end = sp_cursor + dur
+                if not any(b_start < slot_end and b_end > sp_cursor for b_start, b_end in busy[sp_id]):
+                    sp_slots.append(Slot(
                         specialist_id=sp_id,
-                        start=cursor,
+                        start=sp_cursor,
                         end=slot_end,
-                        display_end=cursor + timedelta(minutes=SLOT_DISPLAY),
+                        display_end=sp_cursor + timedelta(minutes=display),
                     ))
-        cursor += SLOT_DURATION
+            sp_cursor += dur
+        slots_per_sp[sp_id] = sp_slots
 
     # For each specialist pick 1 AM slot (< 13:00 Prague) + 1 PM slot (≥ 13:00 Prague)
     def _pick_am_pm(slots: list[Slot]) -> list[Slot]:
@@ -269,10 +282,13 @@ def create_calendar_event(
             contact_lines.append(f"Email: {client_email}")
         contact_lines.append(f"Telegram ID: {telegram_id}")
         contact_str = "\n".join(contact_lines)
+        session_min  = sp.get("display_minutes", SLOT_DISPLAY)
+        buffer_min   = sp.get("slot_minutes", SLOT_DURATION.seconds // 60) - session_min
         event = {
             "summary": f"SafeHaven — {client_name}" if client_name else "SafeHaven Session",
             "description": (
-                f"Client session (45 min) + 15 min buffer. Booked via SafeHaven bot.\n"
+                f"Client session ({session_min} min) + {buffer_min} min buffer. "
+                f"Booked via SafeHaven bot.\n"
                 f"Client: {client_name}\n"
                 f"{contact_str}"
             ),
