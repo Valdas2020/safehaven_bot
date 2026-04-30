@@ -8,8 +8,7 @@ from aiogram.types import CallbackQuery, Message
 
 import database as db
 from keyboards.inline import (
-    age_keyboard, contact_method_keyboard, format_keyboard,
-    yes_no_keyboard,
+    age_keyboard, contact_method_keyboard, yes_no_keyboard,
 )
 from states.user_states import UserFlow
 from utils.i18n import t
@@ -103,32 +102,12 @@ async def cb_age(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
         pass
-    await callback.message.answer(t(lang, "intake_format"), reply_markup=format_keyboard(lang))
-    await state.set_state(UserFlow.intake_format)
-    await callback.answer()
-
-
-# ── Step 5: Format ────────────────────────────────────────────────────────────
-
-@router.callback_query(UserFlow.intake_format, F.data.in_({"fmt_online", "fmt_in_person"}))
-async def cb_format(callback: CallbackQuery, state: FSMContext) -> None:
-    data = await state.get_data()
-    lang = data["lang"]
-    fmt = "online" if callback.data == "fmt_online" else "in_person"
-
-    await state.update_data(format=fmt)
-    await db.upsert_user(callback.from_user.id, format=fmt)
-
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except TelegramBadRequest:
-        pass
     await callback.message.answer(t(lang, "intake_email"))
     await state.set_state(UserFlow.intake_email)
     await callback.answer()
 
 
-# ── Step 6: Email (required) ──────────────────────────────────────────────────
+# ── Step 5: Email (required) ──────────────────────────────────────────────────
 
 @router.message(UserFlow.intake_email)
 async def msg_email(message: Message, state: FSMContext) -> None:

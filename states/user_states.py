@@ -11,7 +11,6 @@ class UserFlow(StatesGroup):
     intake_name           = State()
     intake_age            = State()
     intake_location       = State()
-    intake_format         = State()
     intake_email          = State()
     intake_phone          = State()
     intake_contact_method = State()
