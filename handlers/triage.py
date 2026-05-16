@@ -1,13 +1,10 @@
 import logging
 
+import database as db
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-
-import database as db
-from keyboards.inline import slots_keyboard, triage_keyboard
-from services.calendar import get_free_slots
 from states.user_states import UserFlow
 from utils.i18n import t
 from utils.triage import CATEGORY_TRIAGE, classify_text
@@ -34,25 +31,27 @@ async def _handle_triage_result(
         await state.clear()
         return
 
-    # Normal flow → fetch slots matched to user profile
-    fsm_data = await state.get_data()
-    age_cat = fsm_data.get("age_cat", "adult")
-    slots = await get_free_slots(lang, age_cat=age_cat, triage_level=triage_level)
-    if not slots:
+    # Normal flow → fetch available windows from Google Sheets
+    today = date.today()
+    windows = await get_available_windows(
+        SPECIALIST_NAME,
+        today,
+        today + timedelta(days=14),
+        SPREADSHEET_ID,
+        SCHEDULE_SHEET_TAB,
+    )
+    if not windows:
         await answer_fn(t(lang, "no_slots"))
         await state.clear()
         return
 
     await state.update_data(
         triage_description=description,
-        slots=[
-            {"specialist_id": s.specialist_id, "start": s.start.isoformat(), "end": s.end.isoformat()}
-            for s in slots
-        ],
+        windows=[w.to_dict() for w in windows],
     )
     await answer_fn(
         t(lang, "slots_header"),
-        reply_markup=slots_keyboard(slots, lang),
+        reply_markup=windows_keyboard(windows, lang),
     )
     await state.set_state(UserFlow.slot_selection)
 
@@ -69,9 +68,24 @@ async def cb_category(callback: CallbackQuery, state: FSMContext) -> None:
     triage_level = CATEGORY_TRIAGE[category]
 
     category_labels = {
-        "cat_crisis":  {"UA": "🆘 Криза",        "RU": "🆘 Кризис",       "CZ": "🆘 Krize",       "EN": "🆘 Crisis"},
-        "cat_consult": {"UA": "🧠 Психолог",      "RU": "🧠 Психолог",      "CZ": "🧠 Psycholog",    "EN": "🧠 Psychologist"},
-        "cat_ikp":     {"UA": "🤝 Допомога / ІКП","RU": "🤝 Помощь / ИКП","CZ": "🤝 Pomoc / IKP","EN": "🤝 Assistance / IKP"},
+        "cat_crisis": {
+            "UA": "🆘 Криза",
+            "RU": "🆘 Кризис",
+            "CZ": "🆘 Krize",
+            "EN": "🆘 Crisis",
+        },
+        "cat_consult": {
+            "UA": "🧠 Психолог",
+            "RU": "🧠 Психолог",
+            "CZ": "🧠 Psycholog",
+            "EN": "🧠 Psychologist",
+        },
+        "cat_ikp": {
+            "UA": "🤝 Допомога / ІКП",
+            "RU": "🤝 Помощь / ИКП",
+            "CZ": "🤝 Pomoc / IKP",
+            "EN": "🤝 Assistance / IKP",
+        },
     }
     description = category_labels.get(category, {}).get(lang, category)
 

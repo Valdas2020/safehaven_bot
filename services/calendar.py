@@ -342,3 +342,79 @@ def create_calendar_event(
     except Exception as exc:
         logger.error("Failed to create event for %s: %s", specialist_id, exc)
         return None
+
+
+def create_event_from_window(
+    window,  # models.BookingWindow — avoid circular import with type hint
+    telegram_user_id: int,
+    client_name: str = "",
+    client_phone: str = "",
+    client_email: str = "",
+    contact_method: str = "",
+) -> str | None:
+    """
+    Create a calendar event from a BookingWindow (sheets-based scheduling).
+    Returns Google event ID or None on failure.
+    NOTE: bot@amiga-migrant.cz must have 'Make changes to events' on the calendar.
+    """
+    try:
+        service = _build_service()
+
+        start_dt = datetime(
+            window.date.year,
+            window.date.month,
+            window.date.day,
+            window.start.hour,
+            window.start.minute,
+            tzinfo=PRAGUE_TZ,
+        )
+        end_dt = datetime(
+            window.date.year,
+            window.date.month,
+            window.date.day,
+            window.end.hour,
+            window.end.minute,
+            tzinfo=PRAGUE_TZ,
+        )
+
+        fmt_label = "Online session" if window.is_online else "Offline"
+        location_line = window.address if not window.is_online else "Online session"
+
+        contact_parts = []
+        if client_phone:
+            cm_label = f" ({contact_method})" if contact_method else ""
+            contact_parts.append(f"Phone: {client_phone}{cm_label}")
+        if client_email:
+            contact_parts.append(f"Email: {client_email}")
+        contact_parts.append(f"Telegram ID: {telegram_user_id}")
+
+        description = (
+            "SafeHaven Booking\n"
+            "──────────────────\n"
+            f"Specialist: {window.specialist_name}\n"
+            f"Category: {window.category}\n"
+            f"Format: {fmt_label}\n"
+            f"Location: {location_line}\n"
+            + "\n".join(contact_parts)
+            + "\nBooked via: SafeHaven Bot"
+        )
+
+        event = {
+            "summary": f"SafeHaven — {client_name}"
+            if client_name
+            else "SafeHaven Session",
+            "description": description,
+            "location": window.address if not window.is_online else "",
+            "start": {"dateTime": start_dt.isoformat(), "timeZone": "Europe/Prague"},
+            "end": {"dateTime": end_dt.isoformat(), "timeZone": "Europe/Prague"},
+        }
+        created = (
+            service.events().insert(calendarId=window.calendar_id, body=event).execute()
+        )
+        logger.info(
+            "Event created: %s calendar=%s", created.get("id"), window.calendar_id
+        )
+        return created.get("id")
+    except Exception as exc:
+        logger.error("Failed to create event for %s: %s", window.specialist_name, exc)
+        return None

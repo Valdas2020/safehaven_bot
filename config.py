@@ -26,8 +26,15 @@ GOOGLE_CALENDAR_TOKEN_JSON: str = os.getenv("GOOGLE_CALENDAR_TOKEN_JSON", "")
 # Google Sheets — Service Account (must have Editor access to the sheet)
 GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
 
-# Google Sheets sheet ID
+# Google Sheets — reporting sheet
 GOOGLE_SHEETS_ID: str = os.getenv("GOOGLE_SHEETS_ID", "")
+
+# Google Sheets — specialist schedule
+SPREADSHEET_ID: str = os.getenv(
+    "SPREADSHEET_ID", "1JxwYMTyuPx4xGTIft_WkmeugqZ9803Lv5hqVEuqFQYk"
+)
+SCHEDULE_SHEET_TAB: str = os.getenv("SCHEDULE_SHEET_TAB", "5")
+SPECIALIST_NAME: str = os.getenv("SPECIALIST_NAME", "Olha Mazur")
 
 # Specialist Telegram IDs for post-visit prompts
 # Format: "specialist_id:telegram_id,specialist_id2:telegram_id2"
