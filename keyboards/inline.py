@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from models import BookingWindow
 from services.calendar import SPECIALISTS, Slot
 from utils.i18n import t
 
