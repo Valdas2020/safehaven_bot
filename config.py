@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -6,7 +7,9 @@ load_dotenv()
 # Telegram
 BOT_TOKEN: str = os.getenv("BOT_TOKEN", "")
 WEBHOOK_SECRET: str = os.getenv("WEBHOOK_SECRET", "safehaven-secret")
-WEBHOOK_HOST: str = os.getenv("WEBHOOK_HOST", "")  # e.g. https://safehaven-bot.onrender.com
+WEBHOOK_HOST: str = os.getenv(
+    "WEBHOOK_HOST", ""
+)  # e.g. https://safehaven-bot.onrender.com
 WEBHOOK_PATH: str = "/webhook"
 WEBHOOK_URL: str = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"
 
@@ -17,10 +20,13 @@ PORT: int = int(os.getenv("PORT", 8000))
 # Database
 DATABASE_URL: str = os.getenv("DATABASE_URL", "")  # postgresql+asyncpg://...
 
-# Google Calendar
+# Google Calendar — OAuth2 token for bot@amiga-migrant.cz
+GOOGLE_CALENDAR_TOKEN_JSON: str = os.getenv("GOOGLE_CALENDAR_TOKEN_JSON", "")
+
+# Google Sheets — Service Account (must have Editor access to the sheet)
 GOOGLE_SERVICE_ACCOUNT_JSON: str = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
 
-# Google Sheets (same service account, must have Editor access)
+# Google Sheets sheet ID
 GOOGLE_SHEETS_ID: str = os.getenv("GOOGLE_SHEETS_ID", "")
 
 # Specialist Telegram IDs for post-visit prompts
@@ -36,8 +42,8 @@ for _pair in os.getenv("SPECIALIST_TG_IDS", "").split(","):
 # SMTP (for specialist email notifications)
 SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
 SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
-SMTP_USER: str = os.getenv("SMTP_USER", "")   # sender address
-SMTP_PASS: str = os.getenv("SMTP_PASS", "")   # app password
+SMTP_USER: str = os.getenv("SMTP_USER", "")  # sender address
+SMTP_PASS: str = os.getenv("SMTP_PASS", "")  # app password
 
 # Admin access (comma-separated Telegram user IDs)
 ADMIN_IDS: set[int] = {
