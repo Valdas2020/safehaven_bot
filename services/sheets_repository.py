@@ -161,10 +161,12 @@ def get_specialist_slots(
 
         category = str(row.get("Kategorie", "")).strip()
 
-        # Prefer "ID kalendáře", fallback to "E-mailová adresa"
+        sp_email = str(row.get("E-mailová adresa", "")).strip()
+
+        # Calendar ID for Google Calendar API — prefer dedicated column, fallback to email
         cal_id = str(row.get("ID kalendáře", "")).strip()
         if not cal_id:
-            cal_id = str(row.get("E-mailová adresa", "")).strip()
+            cal_id = sp_email
             if cal_id:
                 logger.info(
                     "Using E-mailová adresa as calendar_id fallback for %s: %s",
@@ -183,6 +185,7 @@ def get_specialist_slots(
                 category=category,
                 calendar_id=cal_id,
                 specialist_name=sp_name,
+                specialist_email=sp_email,
             )
         )
 

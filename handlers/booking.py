@@ -131,12 +131,14 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     # Email notification to specialist
     description = data.get("triage_description", "—")
     await notify_specialist(
-        specialist_email=window.calendar_id,
+        specialist_email=window.specialist_email or window.calendar_id,
         specialist_name=window.specialist_name,
         client_name=name,
         client_description=description,
         start=start,
         end=end,
+        address=window.address or "",
+        is_online=window.is_online,
     )
 
     # Client confirmation email
@@ -149,6 +151,8 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
             start=start,
             end=end,
             lang=lang,
+            address=window.address or "",
+            is_online=window.is_online,
         )
 
     # Telegram confirmation

@@ -2,6 +2,37 @@ from dataclasses import dataclass
 from datetime import date, time
 from typing import Optional
 
+CONFIRM_STRINGS: dict[str, dict[str, str]] = {
+    "UA": {
+        "header": "✅ Сесію заброньовано!",
+        "session": "сесія 45 хв",
+        "online": "💻 Формат: Онлайн",
+        "in_person": "📍 Формат: Особисто",
+        "address_lbl": "🗺 Адреса:",
+    },
+    "RU": {
+        "header": "✅ Сессия забронирована!",
+        "session": "сессия 45 мин",
+        "online": "💻 Формат: Онлайн",
+        "in_person": "📍 Формат: Лично",
+        "address_lbl": "🗺 Адрес:",
+    },
+    "CZ": {
+        "header": "✅ Termín zarezervován!",
+        "session": "sezení 45 min",
+        "online": "💻 Formát: Online",
+        "in_person": "📍 Formát: Osobně",
+        "address_lbl": "🗺 Adresa:",
+    },
+    "EN": {
+        "header": "✅ Booking confirmed!",
+        "session": "45-min session",
+        "online": "💻 Format: Online session",
+        "in_person": "📍 Format: In-person",
+        "address_lbl": "🗺 Address:",
+    },
+}
+
 MONTH_NAMES: dict[str, list[str]] = {
     "EN": [
         "January",
@@ -103,6 +134,7 @@ class BookingWindow:
     category: str
     calendar_id: str
     specialist_name: str
+    specialist_email: str = ""
 
     def label(self, lang: str = "EN") -> str:
         wd = WEEKDAY_SHORT.get(lang, WEEKDAY_SHORT["EN"])[self.date.weekday()]
@@ -113,23 +145,25 @@ class BookingWindow:
         )
 
     def confirmation_text(self, lang: str = "EN") -> str:
+        s = CONFIRM_STRINGS.get(lang, CONFIRM_STRINGS["EN"])
         wd = WEEKDAY_FULL.get(lang, WEEKDAY_FULL["EN"])[self.date.weekday()]
         month = MONTH_NAMES.get(lang, MONTH_NAMES["EN"])[self.date.month - 1]
         date_str = f"{wd}, {self.date.day} {month} {self.date.year}"
 
         lines = [
-            "✅ Booking confirmed!",
+            s["header"],
             "",
             f"📅 {date_str}",
-            f"🕐 {self.start.strftime('%H:%M')}–{self.display_end.strftime('%H:%M')} (45-min session)",
+            f"🕐 {self.start.strftime('%H:%M')}–{self.display_end.strftime('%H:%M')} ({s['session']})",
             f"👤 {self.specialist_name} · {self.category}",
             "",
         ]
         if self.is_online:
-            lines.append("💻 Format: Online session")
+            lines.append(s["online"])
         else:
-            lines.append("📍 Format: In-person")
-            lines.append(f"🗺 Address: {self.address}")
+            lines.append(s["in_person"])
+            if self.address:
+                lines.append(f"{s['address_lbl']} {self.address}")
 
         return "\n".join(lines)
 
@@ -145,6 +179,7 @@ class BookingWindow:
             "category": self.category,
             "calendar_id": self.calendar_id,
             "specialist_name": self.specialist_name,
+            "specialist_email": self.specialist_email,
         }
 
     @classmethod
@@ -159,4 +194,5 @@ class BookingWindow:
             category=d["category"],
             calendar_id=d["calendar_id"],
             specialist_name=d["specialist_name"],
+            specialist_email=d.get("specialist_email", ""),
         )

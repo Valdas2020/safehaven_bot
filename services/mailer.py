@@ -7,18 +7,64 @@ Requires env vars:
   SMTP_USER  — sender Gmail address (e.g. bot@safehaven.org)
   SMTP_PASS  — Gmail App Password (not the account password)
 """
+
 import logging
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from zoneinfo import ZoneInfo
-from datetime import datetime
 
 import aiosmtplib
-
-from config import SMTP_HOST, SMTP_PORT, SMTP_PASS, SMTP_USER
+from config import SMTP_HOST, SMTP_PASS, SMTP_PORT, SMTP_USER
+from models import MONTH_NAMES, WEEKDAY_FULL
 
 logger = logging.getLogger(__name__)
 PRAGUE_TZ = ZoneInfo("Europe/Prague")
+
+_EMAIL_LABELS: dict[str, dict[str, str]] = {
+    "UA": {
+        "specialist": "Спеціаліст",
+        "date": "Дата",
+        "time": "Час",
+        "duration": "Тривалість",
+        "address": "Адреса",
+        "format_online": "💻 Онлайн",
+        "format_in_person": "📍 Особисто",
+    },
+    "RU": {
+        "specialist": "Специалист",
+        "date": "Дата",
+        "time": "Время",
+        "duration": "Длительность",
+        "address": "Адрес",
+        "format_online": "💻 Онлайн",
+        "format_in_person": "📍 Лично",
+    },
+    "CZ": {
+        "specialist": "Specialista",
+        "date": "Datum",
+        "time": "Čas",
+        "duration": "Délka",
+        "address": "Adresa",
+        "format_online": "💻 Online",
+        "format_in_person": "📍 Osobně",
+    },
+    "EN": {
+        "specialist": "Specialist",
+        "date": "Date",
+        "time": "Time",
+        "duration": "Duration",
+        "address": "Address",
+        "format_online": "💻 Online",
+        "format_in_person": "📍 In-person",
+    },
+}
+
+
+def _localized_date(dt: datetime, lang: str) -> str:
+    wd = WEEKDAY_FULL.get(lang, WEEKDAY_FULL["EN"])[dt.weekday()]
+    month = MONTH_NAMES.get(lang, MONTH_NAMES["EN"])[dt.month - 1]
+    return f"{wd}, {dt.day} {month} {dt.year}"
 
 
 async def send_client_confirmation(
@@ -28,19 +74,19 @@ async def send_client_confirmation(
     start: datetime,
     end: datetime,
     lang: str = "EN",
+    address: str = "",
+    is_online: bool = False,
 ) -> bool:
-    """
-    Send booking confirmation to the client.
-    Returns True on success, False on failure (non-fatal).
-    """
+    """Send booking confirmation to the client."""
     if not SMTP_USER or not SMTP_PASS:
         return False
     if not client_email:
         return False
 
+    lbl = _EMAIL_LABELS.get(lang, _EMAIL_LABELS["EN"])
     local_start = start.astimezone(PRAGUE_TZ)
-    local_end   = end.astimezone(PRAGUE_TZ)
-    date_str = local_start.strftime("%A, %d %B %Y")
+    local_end = end.astimezone(PRAGUE_TZ)
+    date_str = _localized_date(local_start, lang)
     time_str = f"{local_start.strftime('%H:%M')}–{local_end.strftime('%H:%M')} (Prague)"
 
     subjects = {
@@ -65,19 +111,30 @@ async def send_client_confirmation(
     greeting = greetings.get(lang, greetings["EN"])
     body_line = bodies.get(lang, bodies["EN"])
 
+    if is_online:
+        location_row = f"""
+    <tr><td style="padding: 8px; font-weight: bold;">{lbl["address"]}</td>
+        <td style="padding: 8px;">{lbl["format_online"]}</td></tr>"""
+    elif address:
+        location_row = f"""
+    <tr><td style="padding: 8px; font-weight: bold;">{lbl["address"]}</td>
+        <td style="padding: 8px;">{lbl["format_in_person"]}<br>{address}</td></tr>"""
+    else:
+        location_row = ""
+
     body_html = f"""
 <html><body style="font-family: Arial, sans-serif; color: #2C2C2C; max-width: 600px;">
   <h2 style="color: #5B7B5E;">✅ {body_line}</h2>
   <p>{greeting}</p>
   <table style="border-collapse: collapse; width: 100%;">
-    <tr><td style="padding: 8px; font-weight: bold;">Specialist</td>
+    <tr><td style="padding: 8px; font-weight: bold;">{lbl["specialist"]}</td>
         <td style="padding: 8px;">{specialist_name}</td></tr>
-    <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">Date</td>
+    <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">{lbl["date"]}</td>
         <td style="padding: 8px;">{date_str}</td></tr>
-    <tr><td style="padding: 8px; font-weight: bold;">Time</td>
+    <tr><td style="padding: 8px; font-weight: bold;">{lbl["time"]}</td>
         <td style="padding: 8px;">{time_str}</td></tr>
-    <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">Duration</td>
-        <td style="padding: 8px;">45 min</td></tr>
+    <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">{lbl["duration"]}</td>
+        <td style="padding: 8px;">45 min</td></tr>{location_row}
   </table>
   <p style="margin-top: 24px; color: #888; font-size: 13px;">
     SafeHaven bot — automated notification.
@@ -87,8 +144,8 @@ async def send_client_confirmation(
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"]    = f"SafeHaven Bot <{SMTP_USER}>"
-    msg["To"]      = client_email
+    msg["From"] = f"SafeHaven Bot <{SMTP_USER}>"
+    msg["To"] = client_email
     msg.attach(MIMEText(body_html, "html", "utf-8"))
 
     try:
@@ -114,19 +171,30 @@ async def notify_specialist(
     client_description: str,
     start: datetime,
     end: datetime,
+    address: str = "",
+    is_online: bool = False,
 ) -> bool:
-    """
-    Send booking notification email to the specialist.
-    Returns True on success, False on failure (non-fatal).
-    """
+    """Send booking notification email to the specialist."""
     if not SMTP_USER or not SMTP_PASS:
         logger.warning("SMTP not configured — skipping email notification")
         return False
+    if not specialist_email:
+        logger.warning(
+            "No specialist email — skipping notification for %s", specialist_name
+        )
+        return False
 
     local_start = start.astimezone(PRAGUE_TZ)
-    local_end   = end.astimezone(PRAGUE_TZ)
+    local_end = end.astimezone(PRAGUE_TZ)
     date_str = local_start.strftime("%A, %d %B %Y")
     time_str = f"{local_start.strftime('%H:%M')}–{local_end.strftime('%H:%M')} (Prague)"
+
+    if is_online:
+        location_display = "💻 Online"
+    elif address:
+        location_display = f"📍 {address}"
+    else:
+        location_display = "—"
 
     subject = f"SafeHaven: New session booked — {date_str}"
 
@@ -144,6 +212,8 @@ async def notify_specialist(
         <td style="padding: 8px;">{time_str}</td></tr>
     <tr><td style="padding: 8px; font-weight: bold;">Session</td>
         <td style="padding: 8px;">45 min + 15 min buffer</td></tr>
+    <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">Location</td>
+        <td style="padding: 8px;">{location_display}</td></tr>
   </table>
 
   <h3 style="color: #5B7B5E; margin-top: 24px;">Client's message</h3>
@@ -159,8 +229,8 @@ async def notify_specialist(
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"]    = f"SafeHaven Bot <{SMTP_USER}>"
-    msg["To"]      = specialist_email
+    msg["From"] = f"SafeHaven Bot <{SMTP_USER}>"
+    msg["To"] = specialist_email
     msg.attach(MIMEText(body_html, "html", "utf-8"))
 
     try:
