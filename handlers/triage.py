@@ -1,10 +1,14 @@
 import logging
+from datetime import date, timedelta
 
 import database as db
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from config import SCHEDULE_SHEET_TAB, SPECIALIST_NAME, SPREADSHEET_ID
+from keyboards.inline import windows_keyboard
+from services.sheets_repository import get_available_windows
 from states.user_states import UserFlow
 from utils.i18n import t
 from utils.triage import CATEGORY_TRIAGE, classify_text
