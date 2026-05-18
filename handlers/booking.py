@@ -112,6 +112,15 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         window.end.minute,
         tzinfo=_tz,
     ).astimezone(timezone.utc)
+    # display_end is what we show to clients (45 min, not the full 60-min block)
+    client_end = datetime(
+        window.date.year,
+        window.date.month,
+        window.date.day,
+        window.display_end.hour,
+        window.display_end.minute,
+        tzinfo=_tz,
+    ).astimezone(timezone.utc)
 
     # Create Google Calendar event
     event_id = create_event_from_window(
@@ -149,7 +158,7 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
             client_name=name,
             specialist_name=window.specialist_name,
             start=start,
-            end=end,
+            end=client_end,
             lang=lang,
             address=window.address or "",
             is_online=window.is_online,

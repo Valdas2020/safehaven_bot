@@ -193,44 +193,16 @@ def get_specialist_slots(
     return result
 
 
-async def get_available_windows(
-    specialist_name: str,
+def _apply_freebusy(
+    windows: list[BookingWindow],
     date_from: date,
     date_to: date,
-    spreadsheet_id: str,
-    sheet_tab: str,
-    limit: int = 3,
-) -> list[BookingWindow]:
-    """Return up to `limit` available (not busy) BookingWindows."""
-    import asyncio
-
-    return await asyncio.get_event_loop().run_in_executor(
-        None,
-        _sync_get_available,
-        specialist_name,
-        date_from,
-        date_to,
-        spreadsheet_id,
-        sheet_tab,
-        limit,
-    )
-
-
-def _sync_get_available(
-    specialist_name: str,
-    date_from: date,
-    date_to: date,
-    spreadsheet_id: str,
-    sheet_tab: str,
     limit: int,
 ) -> list[BookingWindow]:
-    windows = get_specialist_slots(
-        specialist_name, date_from, date_to, spreadsheet_id, sheet_tab
-    )
+    """Filter windows against Google Calendar freebusy; return up to limit."""
     if not windows:
         return []
 
-    # Fetch busy periods for all relevant calendars in one freebusy call
     from services.calendar import _build_service  # reuse OAuth2 service
 
     cal_ids = list({w.calendar_id for w in windows if w.calendar_id})
@@ -293,3 +265,111 @@ def _sync_get_available(
             break
 
     return available
+
+
+async def get_available_windows(
+    specialist_name: str,
+    date_from: date,
+    date_to: date,
+    spreadsheet_id: str,
+    sheet_tab: str,
+    limit: int = 3,
+) -> list[BookingWindow]:
+    """Return up to `limit` available BookingWindows for a single specialist name."""
+    import asyncio
+
+    return await asyncio.get_event_loop().run_in_executor(
+        None,
+        lambda: _apply_freebusy(
+            get_specialist_slots(
+                specialist_name, date_from, date_to, spreadsheet_id, sheet_tab
+            ),
+            date_from,
+            date_to,
+            limit,
+        ),
+    )
+
+
+def _rows_for_calendars(
+    calendar_ids: list[str],
+    date_from: date,
+    date_to: date,
+    spreadsheet_id: str,
+    sheet_tab: str,
+) -> list[BookingWindow]:
+    """Parse all sheet rows whose calendar_id is in the given list."""
+    rows = load_rows(spreadsheet_id, sheet_tab)
+    cal_set = set(calendar_ids)
+    result: list[BookingWindow] = []
+
+    for row in rows:
+        raw_date = str(row.get("Data", "")).strip()
+        d = _parse_date(raw_date)
+        if d is None or not (date_from <= d <= date_to):
+            continue
+
+        raw_slot = str(row.get("Otevírací doba", "")).strip()
+        parsed = _parse_slot(raw_slot)
+        if parsed is None:
+            continue
+        start_t, end_t = parsed
+
+        display_end_dt = datetime.combine(d, start_t) + timedelta(minutes=45)
+        display_end_t = display_end_dt.time()
+
+        raw_loc = str(row.get("Místo konání", "")).strip()
+        is_online, address = _resolve_location(raw_loc)
+
+        category = str(row.get("Kategorie", "")).strip()
+        sp_name = str(row.get("Jméno a příjmení", "")).strip()
+        sp_email = str(row.get("E-mailová adresa", "")).strip()
+
+        cal_id = str(row.get("ID kalendáře", "")).strip() or sp_email
+        if not cal_id or cal_id not in cal_set:
+            continue
+
+        result.append(
+            BookingWindow(
+                date=d,
+                start=start_t,
+                end=end_t,
+                display_end=display_end_t,
+                is_online=is_online,
+                address=address,
+                category=category,
+                calendar_id=cal_id,
+                specialist_name=sp_name,
+                specialist_email=sp_email,
+            )
+        )
+
+    result.sort(key=lambda w: (w.date, w.start))
+    return result
+
+
+async def get_windows_for_calendars(
+    calendar_ids: list[str],
+    date_from: date,
+    date_to: date,
+    spreadsheet_id: str,
+    sheet_tab: str,
+    limit: int = 4,
+) -> list[BookingWindow]:
+    """Return up to `limit` available BookingWindows for multiple calendar IDs."""
+    import asyncio
+
+    if not calendar_ids:
+        return []
+
+    return await asyncio.get_event_loop().run_in_executor(
+        None,
+        lambda: _apply_freebusy(
+            _rows_for_calendars(
+                calendar_ids, date_from, date_to, spreadsheet_id, sheet_tab
+            ),
+            date_from,
+            date_to,
+            limit,
+        ),
+    )

@@ -124,14 +124,17 @@ class Slot(NamedTuple):
 # ── Matching ──────────────────────────────────────────────────────────────────
 
 
-def match_specialists(age_cat: str, triage_level: str) -> list[str]:
-    """Return specialist IDs that match user's age group and triage level."""
-    matched = [
+def match_specialists(
+    age_cat: str, triage_level: str, sp_type: str | None = None
+) -> list[str]:
+    """Return specialist IDs matching age group, triage level, and optional type."""
+    return [
         sp_id
         for sp_id, sp in SPECIALISTS.items()
-        if age_cat in sp["age_group"] and triage_level in sp["triage_level"]
+        if age_cat in sp["age_group"]
+        and triage_level in sp["triage_level"]
+        and (sp_type is None or sp.get("type") == sp_type)
     ]
-    return matched
 
 
 # ── Calendar helpers ──────────────────────────────────────────────────────────

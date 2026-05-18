@@ -6,15 +6,22 @@ from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from config import SCHEDULE_SHEET_TAB, SPECIALIST_NAME, SPREADSHEET_ID
+from config import SCHEDULE_SHEET_TAB, SPREADSHEET_ID
 from keyboards.inline import windows_keyboard
-from services.sheets_repository import get_available_windows
+from services.calendar import SPECIALISTS, match_specialists
+from services.sheets_repository import get_windows_for_calendars
 from states.user_states import UserFlow
 from utils.i18n import t
 from utils.triage import CATEGORY_TRIAGE, classify_text
 
 logger = logging.getLogger(__name__)
 router = Router(name="triage")
+
+# Maps triage category to specialist type for filtering
+_CATEGORY_SP_TYPE: dict[str, str] = {
+    "cat_consult": "psychologist",
+    "cat_ikp": "ikp",
+}
 
 
 async def _handle_triage_result(
@@ -35,10 +42,24 @@ async def _handle_triage_result(
         await state.clear()
         return
 
-    # Normal flow → fetch available windows from Google Sheets
+    # Match specialists by age group and service type
+    data = await state.get_data()
+    age_cat = data.get("age_cat", "adult")
+    sp_type = _CATEGORY_SP_TYPE.get(category)  # None = any type (free_text)
+    matched_ids = match_specialists(age_cat, triage_level, sp_type)
+    calendar_ids = [SPECIALISTS[sp_id]["calendar_id"] for sp_id in matched_ids]
+
+    logger.info(
+        "Slot search | age=%s triage=%s category=%s matched=%s",
+        age_cat,
+        triage_level,
+        category,
+        matched_ids,
+    )
+
     today = date.today()
-    windows = await get_available_windows(
-        SPECIALIST_NAME,
+    windows = await get_windows_for_calendars(
+        calendar_ids,
         today,
         today + timedelta(days=14),
         SPREADSHEET_ID,

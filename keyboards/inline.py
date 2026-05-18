@@ -161,9 +161,8 @@ def slots_keyboard(slots: list[Slot], lang: str) -> InlineKeyboardMarkup:
 def windows_keyboard(windows: list[BookingWindow], lang: str) -> InlineKeyboardMarkup:
     rows = []
     for i, w in enumerate(windows):
-        rows.append(
-            [InlineKeyboardButton(text=w.label(lang), callback_data=f"slot_{i}")]
-        )
+        label = f"{w.label(lang)} — {w.specialist_name}"
+        rows.append([InlineKeyboardButton(text=label, callback_data=f"slot_{i}")])
     rows.append(
         [
             InlineKeyboardButton(
