@@ -109,7 +109,8 @@ async def cb_age(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
         pass
-    await callback.message.answer(t(lang, "intake_age_number"))
+    age_key = "intake_age_number_child" if age_cat == "child" else "intake_age_number"
+    await callback.message.answer(t(lang, age_key))
     await state.set_state(UserFlow.intake_age_number)
     await callback.answer()
 
