@@ -184,6 +184,13 @@ async def notify_specialist(
             "No specialist email — skipping notification for %s", specialist_name
         )
         return False
+    if "@" not in specialist_email or specialist_email.endswith(".google.com"):
+        logger.error(
+            "Invalid specialist email '%s' for %s (looks like a calendar ID, not an email)",
+            specialist_email,
+            specialist_name,
+        )
+        return False
 
     local_start = start.astimezone(PRAGUE_TZ)
     local_end = end.astimezone(PRAGUE_TZ)

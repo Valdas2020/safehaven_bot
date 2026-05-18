@@ -43,7 +43,8 @@ async def _send_reminder(bot, telegram_id: int, text: str, send_at: datetime) ->
         logger.error("Failed to send reminder to %s: %s", telegram_id, exc)
 
 
-OPERATOR_PHONE_DISPLAY = "+420 736 101 609"
+OPERATOR_PHONE_DISPLAY = "+420 778 979 211"
+IKP_PHONE_DISPLAY = "+420 720 489 028"
 
 OPERATOR_MSG = {
     "UA": f"☎️ Оператор: {OPERATOR_PHONE_DISPLAY}",
@@ -52,12 +53,22 @@ OPERATOR_MSG = {
     "EN": f"☎️ Operator: {OPERATOR_PHONE_DISPLAY}",
 }
 
+IKP_MSG = {
+    "UA": f"☎️ ІКП: {IKP_PHONE_DISPLAY}",
+    "RU": f"☎️ ИКП: {IKP_PHONE_DISPLAY}",
+    "CZ": f"☎️ IKP: {IKP_PHONE_DISPLAY}",
+    "EN": f"☎️ IKP: {IKP_PHONE_DISPLAY}",
+}
+
 
 @router.callback_query(UserFlow.slot_selection, F.data == "call_operator")
 async def cb_call_operator(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data.get("lang", "RU")
-    await callback.message.answer(OPERATOR_MSG.get(lang, OPERATOR_MSG["RU"]))
+    if data.get("triage_category") == "cat_ikp":
+        await callback.message.answer(IKP_MSG.get(lang, IKP_MSG["RU"]))
+    else:
+        await callback.message.answer(OPERATOR_MSG.get(lang, OPERATOR_MSG["RU"]))
     await callback.answer()
 
 
@@ -140,6 +151,11 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     # Email notification to specialist
     description = data.get("triage_description", "—")
     age_years = data.get("age_years", "")
+    logger.info(
+        "notify_specialist | specialist=%s email=%s",
+        window.specialist_name,
+        window.specialist_email,
+    )
     await notify_specialist(
         specialist_email=window.specialist_email or window.calendar_id,
         specialist_name=window.specialist_name,

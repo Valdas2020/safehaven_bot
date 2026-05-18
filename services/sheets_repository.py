@@ -361,6 +361,15 @@ def _rows_for_calendars(
                 "",
             )
 
+        if not sp_email:
+            logger.warning(
+                "No specialist email for %s (calendar_id=%s) — notifications will be skipped",
+                sp_name,
+                cal_id,
+            )
+        else:
+            logger.debug("Specialist %s email=%s", sp_name, sp_email)
+
         result.append(
             BookingWindow(
                 date=d,

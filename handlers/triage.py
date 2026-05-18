@@ -72,6 +72,7 @@ async def _handle_triage_result(
 
     await state.update_data(
         triage_description=description,
+        triage_category=category,
         windows=[w.to_dict() for w in windows],
     )
     await answer_fn(
