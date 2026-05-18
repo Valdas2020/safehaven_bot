@@ -32,60 +32,65 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 PRAGUE_TZ = ZoneInfo("Europe/Prague")
 
 # ── Specialist registry ───────────────────────────────────────────────────────
-# Add/remove specialists here. calendar_id = Google Calendar email address.
+# calendar_id must match the "ID kalendáře" column in the Google Sheet.
+# email = specialist's personal email for booking notifications (fill in).
 SPECIALISTS: dict[str, dict] = {
-    "psych_adult_1": {
-        "calendar_id": "ralph.drogheda@gmail.com",
-        "email": "ralph.drogheda@gmail.com",
-        "name": "Psychologist (Adults)",
+    "psych_children_ortynska": {
+        "calendar_id": "c_191b2b58915d461cccf64d5cd8c36380de56be47fd10e3f66ea08a077d91e4b2@group.calendar.google.com",
+        "email": "",  # TODO: add Vladyslava Ortynska's email
+        "name": "Vladyslava Ortynska",
         "name_i18n": {
-            "UA": "Психолог (дорослі)",
-            "RU": "Психолог (взрослые)",
-            "CZ": "Psycholog (dospělí)",
-            "EN": "Psychologist (Adults)",
+            "UA": "Владислава Ортинська",
+            "RU": "Владислава Ортынская",
+            "CZ": "Vladyslava Ortynska",
+            "EN": "Vladyslava Ortynska",
         },
         "type": "psychologist",
-        "slot_minutes": 60,  # 45 min session + 15 min buffer
-        "display_minutes": 45,
-        "age_group": ["adult"],
-        "triage_level": ["normal"],
-        "lang": ["EN", "CZ", "UA", "RU"],
-    },
-    "psych_adult_crisis": {
-        "calendar_id": "timbookedtwo2@gmail.com",
-        "email": "timbookedtwo2@gmail.com",
-        "name": "Psychologist (Adults — Crisis)",
-        "name_i18n": {
-            "UA": "Психолог — Кризис (дорослі)",
-            "RU": "Психолог — Кризис (взрослые)",
-            "CZ": "Psycholog — Krize (dospělí)",
-            "EN": "Psychologist — Crisis (Adults)",
-        },
-        "type": "psychologist",
-        "slot_minutes": 60,  # 45 min session + 15 min buffer
-        "display_minutes": 45,
-        "age_group": ["adult"],
-        "triage_level": ["normal", "urgent"],
-        "lang": ["EN", "CZ", "UA", "RU"],
-    },
-    "psych_children": {
-        "calendar_id": "yurkevichirina@gmail.com",
-        "email": "yurkevichirina@gmail.com",
-        "name": "Psychologist (Children)",
-        "name_i18n": {
-            "UA": "Психолог (діти)",
-            "RU": "Психолог (дети)",
-            "CZ": "Psycholog (děti)",
-            "EN": "Psychologist (Children)",
-        },
-        "type": "psychologist",
-        "slot_minutes": 60,  # 45 min session + 15 min buffer
-        "display_minutes": 45,
         "age_group": ["child"],
         "triage_level": ["normal"],
-        "lang": ["EN", "CZ", "UA", "RU"],
     },
-    # IKP specialists: add here with slot_minutes=45, display_minutes=30
+    "psych_adult_filchakova": {
+        "calendar_id": "c_bfbf6e8ea617981b4458946ca2fc85e108480a3c94fe48f9f05488309476903a@group.calendar.google.com",
+        "email": "",  # TODO: add Alisa Filchakova's email
+        "name": "Alisa Filchakova",
+        "name_i18n": {
+            "UA": "Аліса Філчакова",
+            "RU": "Алиса Филчакова",
+            "CZ": "Alisa Filchakova",
+            "EN": "Alisa Filchakova",
+        },
+        "type": "psychologist",
+        "age_group": ["adult"],
+        "triage_level": ["normal"],
+    },
+    "ikp_zanegina": {
+        "calendar_id": "c_c186d772a150106f195628619e265270d573ebec07c597818e6bb7c7e4fc2023@group.calendar.google.com",
+        "email": "",  # TODO: add Natalia Zanegina's email
+        "name": "Natalia Zanegina",
+        "name_i18n": {
+            "UA": "Наталія Занєгіна",
+            "RU": "Наталия Занегина",
+            "CZ": "Natalia Zanegina",
+            "EN": "Natalia Zanegina",
+        },
+        "type": "ikp",
+        "age_group": ["adult", "child"],
+        "triage_level": ["normal"],
+    },
+    "psych_adult_beigul": {
+        "calendar_id": "c_59c184c527b2df5a02e61c2fdc900363e60f44d0c9206c78743f6c35243c546c@group.calendar.google.com",
+        "email": "",  # TODO: add Yulia Beigul's email
+        "name": "Yulia Beigul",
+        "name_i18n": {
+            "UA": "Юлія Бейгул",
+            "RU": "Юлия Бейгул",
+            "CZ": "Yulia Beigul",
+            "EN": "Yulia Beigul",
+        },
+        "type": "psychologist",
+        "age_group": ["adult"],
+        "triage_level": ["normal"],
+    },
 }
 
 # Fallback defaults (each specialist overrides via slot_minutes / display_minutes)

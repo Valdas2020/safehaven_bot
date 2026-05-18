@@ -152,9 +152,14 @@ def get_specialist_slots(
             continue
         start_t, end_t = parsed
 
-        # display_end = start + 45 min
-        display_end_dt = datetime.combine(d, start_t) + timedelta(minutes=45)
-        display_end_t = display_end_dt.time()
+        # display_end: subtract 15-min buffer for 60-min slots; use slot end for shorter ones
+        slot_mins = (
+            datetime.combine(d, end_t) - datetime.combine(d, start_t)
+        ).seconds // 60
+        buffer_mins = 15 if slot_mins >= 60 else 0
+        display_end_t = (
+            datetime.combine(d, start_t) + timedelta(minutes=slot_mins - buffer_mins)
+        ).time()
 
         raw_loc = str(row.get("Místo konání", "")).strip()
         is_online, address = _resolve_location(raw_loc)
@@ -315,8 +320,13 @@ def _rows_for_calendars(
             continue
         start_t, end_t = parsed
 
-        display_end_dt = datetime.combine(d, start_t) + timedelta(minutes=45)
-        display_end_t = display_end_dt.time()
+        slot_mins = (
+            datetime.combine(d, end_t) - datetime.combine(d, start_t)
+        ).seconds // 60
+        buffer_mins = 15 if slot_mins >= 60 else 0
+        display_end_t = (
+            datetime.combine(d, start_t) + timedelta(minutes=slot_mins - buffer_mins)
+        ).time()
 
         raw_loc = str(row.get("Místo konání", "")).strip()
         is_online, address = _resolve_location(raw_loc)
@@ -328,6 +338,15 @@ def _rows_for_calendars(
         cal_id = str(row.get("ID kalendáře", "")).strip() or sp_email
         if not cal_id or cal_id not in cal_set:
             continue
+
+        # If sheet has no email column, fall back to SPECIALISTS registry
+        if not sp_email:
+            from services.calendar import SPECIALISTS as _SPECS
+
+            sp_email = next(
+                (sp["email"] for sp in _SPECS.values() if sp["calendar_id"] == cal_id),
+                "",
+            )
 
         result.append(
             BookingWindow(
