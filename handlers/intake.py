@@ -1,14 +1,15 @@
 import logging
 import re
 
+import database as db
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-
-import database as db
 from keyboards.inline import (
-    age_keyboard, contact_method_keyboard, yes_no_keyboard,
+    age_keyboard,
+    contact_method_keyboard,
+    yes_no_keyboard,
 )
 from states.user_states import UserFlow
 from utils.i18n import t
@@ -22,6 +23,7 @@ PHONE_RE = re.compile(r"^\+?420[\s\-]?\d{3}[\s\-]?\d{3}[\s\-]?\d{3}$")
 
 
 # ── Step 1: Prague eligibility (state set by gdpr.py) ────────────────────────
+
 
 @router.callback_query(UserFlow.intake_prague, F.data.in_({"yn_yes", "yn_no"}))
 async def cb_prague(callback: CallbackQuery, state: FSMContext) -> None:
@@ -50,6 +52,7 @@ async def cb_prague(callback: CallbackQuery, state: FSMContext) -> None:
 
 # ── Step 2: Temporary protection status ──────────────────────────────────────
 
+
 @router.callback_query(UserFlow.intake_protection, F.data.in_({"yn_yes", "yn_no"}))
 async def cb_protection(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
@@ -64,7 +67,9 @@ async def cb_protection(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.answer(t(lang, "not_eligible_protection"))
         await state.clear()
         await callback.answer()
-        logger.info("user_id=%s not eligible: no protection status", callback.from_user.id)
+        logger.info(
+            "user_id=%s not eligible: no protection status", callback.from_user.id
+        )
         return
 
     await callback.message.answer(t(lang, "intake_name"))
@@ -73,6 +78,7 @@ async def cb_protection(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 # ── Step 3: Name ──────────────────────────────────────────────────────────────
+
 
 @router.message(UserFlow.intake_name)
 async def msg_name(message: Message, state: FSMContext) -> None:
@@ -89,6 +95,7 @@ async def msg_name(message: Message, state: FSMContext) -> None:
 
 # ── Step 4: Age ───────────────────────────────────────────────────────────────
 
+
 @router.callback_query(UserFlow.intake_age, F.data.in_({"age_child", "age_adult"}))
 async def cb_age(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
@@ -102,12 +109,34 @@ async def cb_age(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
         pass
-    await callback.message.answer(t(lang, "intake_email"))
-    await state.set_state(UserFlow.intake_email)
+    await callback.message.answer(t(lang, "intake_age_number"))
+    await state.set_state(UserFlow.intake_age_number)
     await callback.answer()
 
 
+# ── Step 4b: Age in years ─────────────────────────────────────────────────────
+
+
+@router.message(UserFlow.intake_age_number)
+async def msg_age_number(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+    raw = message.text.strip()
+
+    if not raw.isdigit() or not (1 <= int(raw) <= 120):
+        await message.answer(t(lang, "intake_age_number_invalid"))
+        return
+
+    age_years = int(raw)
+    await state.update_data(age_years=age_years)
+    await db.upsert_user(message.from_user.id, age_years=age_years)
+
+    await message.answer(t(lang, "intake_email"))
+    await state.set_state(UserFlow.intake_email)
+
+
 # ── Step 5: Email (required) ──────────────────────────────────────────────────
+
 
 @router.message(UserFlow.intake_email)
 async def msg_email(message: Message, state: FSMContext) -> None:
@@ -128,6 +157,7 @@ async def msg_email(message: Message, state: FSMContext) -> None:
 
 # ── Step 7: Phone (required) ──────────────────────────────────────────────────
 
+
 @router.message(UserFlow.intake_phone)
 async def msg_phone(message: Message, state: FSMContext) -> None:
     data = await state.get_data()
@@ -141,11 +171,14 @@ async def msg_phone(message: Message, state: FSMContext) -> None:
     await state.update_data(phone=phone[:32])
     await db.upsert_user(message.from_user.id, phone=phone[:32])
 
-    await message.answer(t(lang, "intake_contact_method"), reply_markup=contact_method_keyboard(lang))
+    await message.answer(
+        t(lang, "intake_contact_method"), reply_markup=contact_method_keyboard(lang)
+    )
     await state.set_state(UserFlow.intake_contact_method)
 
 
 # ── Step 8: Contact method → triage ──────────────────────────────────────────
+
 
 @router.callback_query(
     UserFlow.intake_contact_method,
@@ -171,8 +204,10 @@ async def cb_contact_method(callback: CallbackQuery, state: FSMContext) -> None:
 
 # ── Helper ────────────────────────────────────────────────────────────────────
 
+
 async def _go_to_triage(message, lang: str, state: FSMContext) -> None:
     from keyboards.inline import triage_keyboard as _triage_kb
+
     await message.answer(
         t(lang, "triage_prompt"),
         reply_markup=_triage_kb(lang),

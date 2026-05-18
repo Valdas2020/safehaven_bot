@@ -139,6 +139,7 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
 
     # Email notification to specialist
     description = data.get("triage_description", "—")
+    age_years = data.get("age_years", "")
     await notify_specialist(
         specialist_email=window.specialist_email or window.calendar_id,
         specialist_name=window.specialist_name,
@@ -148,6 +149,7 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         end=end,
         address=window.address or "",
         is_online=window.is_online,
+        client_age=str(age_years) if age_years else "",
     )
 
     # Client confirmation email

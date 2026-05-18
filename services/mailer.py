@@ -173,6 +173,7 @@ async def notify_specialist(
     end: datetime,
     address: str = "",
     is_online: bool = False,
+    client_age: str = "",
 ) -> bool:
     """Send booking notification email to the specialist."""
     if not SMTP_USER or not SMTP_PASS:
@@ -206,7 +207,9 @@ async def notify_specialist(
         <td style="padding: 8px;">{specialist_name}</td></tr>
     <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">Client name</td>
         <td style="padding: 8px;">{client_name}</td></tr>
-    <tr><td style="padding: 8px; font-weight: bold;">Date</td>
+    <tr><td style="padding: 8px; font-weight: bold;">Age</td>
+        <td style="padding: 8px;">{client_age if client_age else "—"}</td></tr>
+    <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">Date</td>
         <td style="padding: 8px;">{date_str}</td></tr>
     <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">Time</td>
         <td style="padding: 8px;">{time_str}</td></tr>

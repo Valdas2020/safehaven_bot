@@ -208,6 +208,19 @@ def _apply_freebusy(
     if not windows:
         return []
 
+    # Drop slots that are in the past or less than 6 hours from now
+    min_start_utc = datetime.now(timezone.utc) + timedelta(hours=6)
+    windows = [
+        w
+        for w in windows
+        if datetime.combine(w.date, w.start)
+        .replace(tzinfo=PRAGUE_TZ)
+        .astimezone(timezone.utc)
+        >= min_start_utc
+    ]
+    if not windows:
+        return []
+
     from services.calendar import _build_service  # reuse OAuth2 service
 
     cal_ids = list({w.calendar_id for w in windows if w.calendar_id})

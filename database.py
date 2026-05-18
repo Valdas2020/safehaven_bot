@@ -2,12 +2,10 @@
 PostgreSQL via asyncpg.
 All raw SQL — no ORM overhead for the MVP.
 """
+
 import logging
-from contextlib import asynccontextmanager
-from typing import Any
 
 import asyncpg
-
 from config import DATABASE_URL
 
 logger = logging.getLogger(__name__)
@@ -32,13 +30,19 @@ async def init_db() -> None:
                 email           TEXT,
                 phone           TEXT,
                 contact_method  TEXT,
+                age_years       INT,
                 gdpr_accepted   BOOLEAN NOT NULL DEFAULT FALSE,
                 status          TEXT NOT NULL DEFAULT 'active',
                 created_at      TIMESTAMPTZ DEFAULT NOW()
             )
         """)
         # Migrate existing deployments that lack the new columns
-        for col, coltype in [("email", "TEXT"), ("phone", "TEXT"), ("contact_method", "TEXT")]:
+        for col, coltype in [
+            ("email", "TEXT"),
+            ("phone", "TEXT"),
+            ("contact_method", "TEXT"),
+            ("age_years", "INT"),
+        ]:
             await conn.execute(f"""
                 DO $$ BEGIN
                     ALTER TABLE users ADD COLUMN {col} {coltype};
@@ -95,6 +99,7 @@ def pool() -> asyncpg.Pool:
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
+
 async def get_user(telegram_id: int) -> dict | None:
     row = await pool().fetchrow(
         "SELECT * FROM users WHERE telegram_id = $1", telegram_id
@@ -110,10 +115,11 @@ async def upsert_user(telegram_id: int, **kwargs) -> dict:
     if kwargs:
         cols = list(kwargs.keys())
         vals = list(kwargs.values())
-        set_clause = ", ".join(f"{c} = ${i+2}" for i, c in enumerate(cols))
+        set_clause = ", ".join(f"{c} = ${i + 2}" for i, c in enumerate(cols))
         await pool().execute(
             f"UPDATE users SET {set_clause} WHERE telegram_id = $1",
-            telegram_id, *vals,
+            telegram_id,
+            *vals,
         )
     row = await pool().fetchrow(
         "SELECT * FROM users WHERE telegram_id = $1", telegram_id
@@ -129,7 +135,10 @@ async def create_case(
         INSERT INTO cases (user_id, triage_level, category, description)
         VALUES ($1, $2, $3, $4) RETURNING id
         """,
-        user_id, triage_level, category, description,
+        user_id,
+        triage_level,
+        category,
+        description,
     )
     logger.info("Case #%s created triage=%s", row["id"], triage_level)
     return row["id"]
@@ -147,7 +156,11 @@ async def create_booking(
         INSERT INTO bookings (user_id, specialist_id, start_time, end_time, calendar_event_id)
         VALUES ($1, $2, $3, $4, $5) RETURNING id
         """,
-        user_id, specialist_id, start_time, end_time, calendar_event_id,
+        user_id,
+        specialist_id,
+        start_time,
+        end_time,
+        calendar_event_id,
     )
     return row["id"]
 
@@ -168,10 +181,13 @@ async def delete_user_data(telegram_id: int) -> bool:
         return False
     user_id = user["id"]
     async with pool().acquire() as conn:
-        await conn.execute("""
+        await conn.execute(
+            """
             DELETE FROM post_visit
             WHERE booking_id IN (SELECT id FROM bookings WHERE user_id = $1)
-        """, user_id)
+        """,
+            user_id,
+        )
         await conn.execute("DELETE FROM bookings WHERE user_id = $1", user_id)
         await conn.execute("DELETE FROM cases WHERE user_id = $1", user_id)
         await conn.execute("DELETE FROM users WHERE id = $1", user_id)
@@ -191,9 +207,15 @@ async def create_post_visit(
         INSERT INTO post_visit (booking_id, status, duration_minutes, type_of_work, note_short)
         VALUES ($1, $2, $3, $4, $5) RETURNING id
         """,
-        booking_id, status, duration_minutes, type_of_work, note_short,
+        booking_id,
+        status,
+        duration_minutes,
+        type_of_work,
+        note_short,
     )
-    logger.info("Post-visit #%s created status=%s booking_id=%s", row["id"], status, booking_id)
+    logger.info(
+        "Post-visit #%s created status=%s booking_id=%s", row["id"], status, booking_id
+    )
     return row["id"]
 
 
