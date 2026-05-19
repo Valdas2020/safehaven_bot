@@ -5,8 +5,9 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 import database as db
-from keyboards.inline import gdpr_keyboard, yes_no_keyboard
+from keyboards.inline import gdpr_keyboard, privacy_back_keyboard, yes_no_keyboard
 from states.user_states import UserFlow
+from texts.privacy_policy import PRIVACY_POLICY
 from utils.i18n import t
 
 logger = logging.getLogger(__name__)
@@ -55,3 +56,30 @@ async def cb_gdpr_decline(callback: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await callback.answer()
     logger.info("user_id=%s declined GDPR", callback.from_user.id)
+
+
+@router.callback_query(UserFlow.gdpr_consent, F.data == "show_privacy_from_consent")
+async def cb_show_privacy_from_consent(
+    callback: CallbackQuery, state: FSMContext
+) -> None:
+    data = await state.get_data()
+    lang = data.get("lang", "EN")
+    text = PRIVACY_POLICY.get(lang, PRIVACY_POLICY["EN"])
+    await callback.message.edit_text(
+        text,
+        reply_markup=privacy_back_keyboard(lang),
+        parse_mode="HTML",
+    )
+    await callback.answer()
+
+
+@router.callback_query(UserFlow.gdpr_consent, F.data == "back_to_gdpr")
+async def cb_back_to_gdpr(callback: CallbackQuery, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data.get("lang", "EN")
+    await callback.message.edit_text(
+        t(lang, "gdpr"),
+        reply_markup=gdpr_keyboard(lang),
+        parse_mode="Markdown",
+    )
+    await callback.answer()

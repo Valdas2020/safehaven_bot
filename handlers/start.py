@@ -29,7 +29,10 @@ RESTART_TEXT = "🔄 Начать заново"
 
 def _restart_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text=RESTART_TEXT)]],
+        keyboard=[
+            [KeyboardButton(text=RESTART_TEXT)],
+            [KeyboardButton(text="🔒 Privacy Policy / Конфіденційність")],
+        ],
         resize_keyboard=True,
         one_time_keyboard=False,
         input_field_placeholder="...",

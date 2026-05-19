@@ -31,6 +31,21 @@ def lang_keyboard() -> InlineKeyboardMarkup:
     )
 
 
+_PP_LABEL = {
+    "UA": "📄 Політика конфіденційності",
+    "RU": "📄 Политика конфиденциальности",
+    "CZ": "📄 Zásady ochrany osobních údajů",
+    "EN": "📄 Privacy Policy",
+}
+
+_BACK_LABEL = {
+    "UA": "⬅️ Назад",
+    "RU": "⬅️ Назад",
+    "CZ": "⬅️ Zpět",
+    "EN": "⬅️ Back",
+}
+
+
 def gdpr_keyboard(lang: str) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -41,6 +56,25 @@ def gdpr_keyboard(lang: str) -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     text=t(lang, "btn_decline"), callback_data="gdpr_decline"
                 ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text=_PP_LABEL.get(lang, _PP_LABEL["EN"]),
+                    callback_data="show_privacy_from_consent",
+                )
+            ],
+        ]
+    )
+
+
+def privacy_back_keyboard(lang: str) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text=_BACK_LABEL.get(lang, _BACK_LABEL["EN"]),
+                    callback_data="back_to_gdpr",
+                )
             ]
         ]
     )
