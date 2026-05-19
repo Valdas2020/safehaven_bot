@@ -4,7 +4,7 @@ Email notifications to specialists after a booking is confirmed.
 Requires env vars:
   SMTP_HOST  — default: smtp.gmail.com
   SMTP_PORT  — default: 587 (STARTTLS)
-  SMTP_USER  — sender Gmail address (e.g. bot@safehaven.org)
+  SMTP_USER  — sender Gmail address (e.g. bot@reachable.org)
   SMTP_PASS  — Gmail App Password (not the account password)
 """
 
@@ -90,10 +90,10 @@ async def send_client_confirmation(
     time_str = f"{local_start.strftime('%H:%M')}–{local_end.strftime('%H:%M')} (Prague)"
 
     subjects = {
-        "UA": f"SafeHaven: Сесія заброньована — {date_str}",
-        "RU": f"SafeHaven: Сессия забронирована — {date_str}",
-        "CZ": f"SafeHaven: Termín zarezervován — {date_str}",
-        "EN": f"SafeHaven: Session booked — {date_str}",
+        "UA": f"Reachable: Сесія заброньована — {date_str}",
+        "RU": f"Reachable: Сессия забронирована — {date_str}",
+        "CZ": f"Reachable: Termín zarezervován — {date_str}",
+        "EN": f"Reachable: Session booked — {date_str}",
     }
     greetings = {
         "UA": f"Вітаємо, {client_name}!",
@@ -137,14 +137,14 @@ async def send_client_confirmation(
         <td style="padding: 8px;">45 min</td></tr>{location_row}
   </table>
   <p style="margin-top: 24px; color: #888; font-size: 13px;">
-    SafeHaven bot — automated notification.
+    Reachable bot — automated notification.
   </p>
 </body></html>
 """
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = f"SafeHaven Bot <{SMTP_USER}>"
+    msg["From"] = f"Reachable Bot <{SMTP_USER}>"
     msg["To"] = client_email
     msg.attach(MIMEText(body_html, "html", "utf-8"))
 
@@ -204,7 +204,7 @@ async def notify_specialist(
     else:
         location_display = "—"
 
-    subject = f"SafeHaven: New session booked — {date_str}"
+    subject = f"Reachable: New session booked — {date_str}"
 
     body_html = f"""
 <html><body style="font-family: Arial, sans-serif; color: #2C2C2C; max-width: 600px;">
@@ -231,7 +231,7 @@ async def notify_specialist(
               padding: 12px 16px; border-radius: 4px; white-space: pre-wrap;">{client_description}</div>
 
   <p style="margin-top: 24px; color: #888; font-size: 13px;">
-    This notification was sent automatically by SafeHaven bot.<br>
+    This notification was sent automatically by Reachable bot.<br>
     The event has been added to your Google Calendar.
   </p>
 </body></html>
@@ -239,7 +239,7 @@ async def notify_specialist(
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
-    msg["From"] = f"SafeHaven Bot <{SMTP_USER}>"
+    msg["From"] = f"Reachable Bot <{SMTP_USER}>"
     msg["To"] = specialist_email
     msg.attach(MIMEText(body_html, "html", "utf-8"))
 

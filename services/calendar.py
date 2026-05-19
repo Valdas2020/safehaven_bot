@@ -330,12 +330,12 @@ def create_calendar_event(
         session_min = sp.get("display_minutes", SLOT_DISPLAY)
         buffer_min = sp.get("slot_minutes", SLOT_DURATION.seconds // 60) - session_min
         event = {
-            "summary": f"SafeHaven — {client_name}"
+            "summary": f"Reachable — {client_name}"
             if client_name
-            else "SafeHaven Session",
+            else "Reachable Session",
             "description": (
                 f"Client session ({session_min} min) + {buffer_min} min buffer. "
-                f"Booked via SafeHaven bot.\n"
+                f"Booked via Reachable bot.\n"
                 f"Client: {client_name}\n"
                 f"{contact_str}"
             ),
@@ -397,20 +397,20 @@ def create_event_from_window(
         contact_parts.append(f"Telegram ID: {telegram_user_id}")
 
         description = (
-            "SafeHaven Booking\n"
+            "Reachable Booking\n"
             "──────────────────\n"
             f"Specialist: {window.specialist_name}\n"
             f"Category: {window.category}\n"
             f"Format: {fmt_label}\n"
             f"Location: {location_line}\n"
             + "\n".join(contact_parts)
-            + "\nBooked via: SafeHaven Bot"
+            + "\nBooked via: Reachable Bot"
         )
 
         event = {
-            "summary": f"SafeHaven — {client_name}"
+            "summary": f"Reachable — {client_name}"
             if client_name
-            else "SafeHaven Session",
+            else "Reachable Session",
             "description": description,
             "location": window.address if not window.is_online else "",
             "start": {"dateTime": start_dt.isoformat(), "timeZone": "Europe/Prague"},

@@ -4,18 +4,19 @@ from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
-    CallbackQuery, KeyboardButton, Message,
-    ReplyKeyboardMarkup, ReplyKeyboardRemove,
+    CallbackQuery,
+    KeyboardButton,
+    Message,
+    ReplyKeyboardMarkup,
 )
-
-from keyboards.inline import begin_keyboard, lang_keyboard
+from keyboards.inline import lang_keyboard
 from states.user_states import UserFlow
 
 logger = logging.getLogger(__name__)
 router = Router(name="start")
 
 WELCOME_TEXT = (
-    "💙 <b>SafeHaven</b>\n\n"
+    "💙 <b>Reachable</b>\n\n"
     "🇺🇦 Психологічна підтримка для українців у Чехії.\n"
     "🇷🇺 Психологическая поддержка для украинцев в Чехии.\n"
     "🇨🇿 Psychologická podpora pro Ukrajince v ČR.\n"
@@ -24,6 +25,7 @@ WELCOME_TEXT = (
 
 # Persistent restart button — shown as Reply keyboard throughout the flow
 RESTART_TEXT = "🔄 Начать заново"
+
 
 def _restart_kb() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(

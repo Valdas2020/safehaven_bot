@@ -1,22 +1,40 @@
 """
-SafeHaven — Mental Health Support Telegram Bot
+Reachable — Mental Health Support Telegram Bot
 Webhook mode via FastAPI + aiogram 3.x
 """
+
 import asyncio
 import logging
 from contextlib import asynccontextmanager
 
+import database as db
+import uvicorn
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import Update
-import uvicorn
+from config import (
+    BOT_TOKEN,
+    HOST,
+    PORT,
+    SPECIALIST_TG_IDS,
+    WEBHOOK_PATH,
+    WEBHOOK_SECRET,
+    WEBHOOK_URL,
+)
 from fastapi import FastAPI, Request, Response
-
-import database as db
-from config import BOT_TOKEN, HOST, PORT, SPECIALIST_TG_IDS, WEBHOOK_PATH, WEBHOOK_SECRET, WEBHOOK_URL
-from handlers import admin, booking, fallback, gdpr, intake, post_visit, privacy, start, triage
+from handlers import (
+    admin,
+    booking,
+    fallback,
+    gdpr,
+    intake,
+    post_visit,
+    privacy,
+    start,
+    triage,
+)
 from middlewares.logging_mw import LoggingMiddleware
 
 logging.basicConfig(
@@ -48,15 +66,19 @@ dp.include_router(fallback.router)  # must be last
 
 # ── FastAPI app ───────────────────────────────────────────────────────────────
 
+
 async def _reschedule_pending_notifications() -> None:
     """On startup: re-create asyncio tasks for all bookings that still need a post-visit prompt."""
     from services.calendar import SPECIALISTS
+
     bookings = await db.get_pending_bookings_for_notification()
     count = 0
     for b in bookings:
         sp_tg_id = SPECIALIST_TG_IDS.get(b["specialist_id"])
         if sp_tg_id:
-            sp_name = SPECIALISTS.get(b["specialist_id"], {}).get("name", b["specialist_id"])
+            sp_name = SPECIALISTS.get(b["specialist_id"], {}).get(
+                "name", b["specialist_id"]
+            )
             asyncio.create_task(
                 post_visit.schedule_specialist_notification(
                     bot, sp_tg_id, b["id"], b["start_time"], b["end_time"], sp_name

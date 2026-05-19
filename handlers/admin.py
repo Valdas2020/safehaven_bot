@@ -1,10 +1,9 @@
 import logging
 
+import database as db
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
-
-import database as db
 from config import ADMIN_IDS
 
 logger = logging.getLogger(__name__)
@@ -41,7 +40,7 @@ async def cmd_stats(message: Message) -> None:
     sp_block = "\n".join(sp_lines) if sp_lines else "  (no bookings yet)"
 
     text = (
-        "📊 <b>SafeHaven Stats</b>\n\n"
+        "📊 <b>Reachable Stats</b>\n\n"
         "<b>New clients</b>\n"
         f"  Today: {r['users_day']}\n"
         f"  Week:  {r['users_week']}\n"
