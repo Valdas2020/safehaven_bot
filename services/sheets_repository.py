@@ -261,6 +261,17 @@ def _apply_freebusy(
             "Calendar service error: %s — returning all windows unfiltered", exc
         )
 
+    # Count today's busy blocks per specialist — workload tiebreaker
+    today_date = datetime.now(PRAGUE_TZ).date()
+    today_load: dict[str, int] = {
+        cal_id: sum(
+            1
+            for b_start, _ in ranges
+            if b_start.astimezone(PRAGUE_TZ).date() == today_date
+        )
+        for cal_id, ranges in busy.items()
+    }
+
     available: list[BookingWindow] = []
     for w in windows:
         if not w.calendar_id:
@@ -276,13 +287,21 @@ def _apply_freebusy(
             .astimezone(timezone.utc)
         )
         ranges = busy.get(w.calendar_id, [])
-        if any(b_start < end_utc and b_end > start_utc for b_start, b_end in ranges):
-            continue
-        available.append(w)
-        if len(available) >= limit:
-            break
+        if not any(
+            b_start < end_utc and b_end > start_utc for b_start, b_end in ranges
+        ):
+            available.append(w)
 
-    return available
+    # Primary: earliest datetime; secondary: fewer sessions today
+    available.sort(
+        key=lambda w: (
+            datetime.combine(w.date, w.start)
+            .replace(tzinfo=PRAGUE_TZ)
+            .astimezone(timezone.utc),
+            today_load.get(w.calendar_id, 0),
+        )
+    )
+    return available[:limit]
 
 
 async def get_available_windows(
@@ -408,6 +427,101 @@ async def get_windows_for_calendars(
         lambda: _apply_freebusy(
             _rows_for_calendars(
                 calendar_ids, date_from, date_to, spreadsheet_id, sheet_tab
+            ),
+            date_from,
+            date_to,
+            limit,
+        ),
+    )
+
+
+def _rows_for_category(
+    sheet_category: str,
+    date_from: date,
+    date_to: date,
+    spreadsheet_id: str,
+    sheet_tab: str,
+) -> list[BookingWindow]:
+    """Parse all sheet rows whose Kategorie matches sheet_category (case-insensitive)."""
+    rows = load_rows(spreadsheet_id, sheet_tab)
+    result: list[BookingWindow] = []
+
+    for row in rows:
+        row_cat = str(row.get("Kategorie", "")).strip()
+        if row_cat.lower() != sheet_category.lower():
+            continue
+
+        raw_date = str(row.get("Data", "")).strip()
+        d = _parse_date(raw_date)
+        if d is None or not (date_from <= d <= date_to):
+            continue
+
+        raw_slot = str(row.get("Otevírací doba", "")).strip()
+        parsed = _parse_slot(raw_slot)
+        if parsed is None:
+            continue
+        start_t, end_t = parsed
+
+        slot_mins = (
+            datetime.combine(d, end_t) - datetime.combine(d, start_t)
+        ).seconds // 60
+        buffer_mins = 15 if slot_mins >= 60 else 0
+        display_end_t = (
+            datetime.combine(d, start_t) + timedelta(minutes=slot_mins - buffer_mins)
+        ).time()
+
+        raw_loc = str(row.get("Místo konání", "")).strip()
+        is_online, address = _resolve_location(raw_loc)
+
+        sp_name = str(row.get("Jméno a příjmení", "")).strip()
+        sp_email = str(row.get("E-mailová adresa", "")).strip()
+        cal_id = str(row.get("ID kalendáře", "")).strip() or sp_email
+
+        if not cal_id:
+            logger.warning("Row for %s has no calendar_id — skipping", sp_name)
+            continue
+        if not sp_email:
+            logger.warning(
+                "No email for %s (cal=%s) — notifications will be skipped",
+                sp_name,
+                cal_id,
+            )
+
+        result.append(
+            BookingWindow(
+                date=d,
+                start=start_t,
+                end=end_t,
+                display_end=display_end_t,
+                is_online=is_online,
+                address=address,
+                category=row_cat,
+                calendar_id=cal_id,
+                specialist_name=sp_name,
+                specialist_email=sp_email,
+            )
+        )
+
+    result.sort(key=lambda w: (w.date, w.start))
+    return result
+
+
+async def get_windows_for_category(
+    sheet_category: str,
+    date_from: date,
+    date_to: date,
+    spreadsheet_id: str,
+    sheet_tab: str,
+    limit: int = 4,
+) -> list[BookingWindow]:
+    """Available BookingWindows for a sheet Kategorie value, up to limit."""
+    import asyncio
+
+    return await asyncio.get_event_loop().run_in_executor(
+        None,
+        lambda: _apply_freebusy(
+            _rows_for_category(
+                sheet_category, date_from, date_to, spreadsheet_id, sheet_tab
             ),
             date_from,
             date_to,

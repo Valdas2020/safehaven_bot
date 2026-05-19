@@ -8,8 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from config import SCHEDULE_SHEET_TAB, SPREADSHEET_ID
 from keyboards.inline import windows_keyboard
-from services.calendar import SPECIALISTS, match_specialists
-from services.sheets_repository import get_windows_for_calendars
+from services.sheets_repository import get_windows_for_category
 from states.user_states import UserFlow
 from utils.i18n import t
 from utils.triage import CATEGORY_TRIAGE, classify_text
@@ -17,10 +16,10 @@ from utils.triage import CATEGORY_TRIAGE, classify_text
 logger = logging.getLogger(__name__)
 router = Router(name="triage")
 
-# Maps triage category to specialist type for filtering
-_CATEGORY_SP_TYPE: dict[str, str] = {
-    "cat_consult": "psychologist",
-    "cat_ikp": "ikp",
+# Maps (bot category, age_cat) → exact "Kategorie" column value in Google Sheets
+_SHEET_CATEGORY: dict[str, dict[str, str]] = {
+    "cat_consult": {"child": "Psycholog (děti)", "adult": "Psycholog"},
+    "cat_ikp": {"child": "IKP", "adult": "IKP"},
 }
 
 
@@ -42,28 +41,30 @@ async def _handle_triage_result(
         await state.clear()
         return
 
-    # Match specialists by age group and service type
     data = await state.get_data()
     age_cat = data.get("age_cat", "adult")
-    sp_type = _CATEGORY_SP_TYPE.get(category)  # None = any type (free_text)
-    matched_ids = match_specialists(age_cat, triage_level, sp_type)
-    calendar_ids = [SPECIALISTS[sp_id]["calendar_id"] for sp_id in matched_ids]
+
+    sheet_cat = _SHEET_CATEGORY.get(category, {}).get(age_cat)
+    if not sheet_cat:
+        # free_text or unknown category — fall back to age-appropriate psychologist
+        sheet_cat = "Psycholog (děti)" if age_cat == "child" else "Psycholog"
 
     logger.info(
-        "Slot search | age=%s triage=%s category=%s matched=%s",
+        "Slot search | age=%s triage=%s category=%s sheet_cat=%s",
         age_cat,
         triage_level,
         category,
-        matched_ids,
+        sheet_cat,
     )
 
     today = date.today()
-    windows = await get_windows_for_calendars(
-        calendar_ids,
+    windows = await get_windows_for_category(
+        sheet_cat,
         today,
         today + timedelta(days=14),
         SPREADSHEET_ID,
         SCHEDULE_SHEET_TAB,
+        limit=3,
     )
     if not windows:
         await answer_fn(t(lang, "no_slots"))
@@ -118,7 +119,7 @@ async def cb_category(callback: CallbackQuery, state: FSMContext) -> None:
     try:
         await callback.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
-        pass  # already removed (double-tap)
+        pass
     await _handle_triage_result(
         telegram_id=callback.from_user.id,
         db_user_id=db_user_id,
