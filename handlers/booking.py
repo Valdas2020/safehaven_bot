@@ -8,10 +8,11 @@ from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from config import SPECIALIST_TG_IDS
+from config import OPERATOR_IKP_ID, OPERATOR_PSYCHOLOG_ID, ORG_PHONE, SPECIALIST_TG_IDS
 from models import BookingWindow
 from services.calendar import create_event_from_window
 from services.mailer import notify_specialist, send_client_confirmation
+from services.operator_notify import notify_operator
 from states.user_states import UserFlow
 from utils.i18n import t
 
@@ -20,16 +21,6 @@ from handlers.post_visit import schedule_specialist_notification
 logger = logging.getLogger(__name__)
 router = Router(name="booking")
 PRAGUE_TZ = ZoneInfo("Europe/Prague")
-
-
-def _slot_details(start: datetime, end: datetime, sp_name: str) -> str:
-    local = start.astimezone(PRAGUE_TZ)
-    local_end = end.astimezone(PRAGUE_TZ)
-    return (
-        f"📅 {local.strftime('%A, %d.%m.%Y')}\n"
-        f"🕐 {local.strftime('%H:%M')}–{local_end.strftime('%H:%M')} (Прага)\n"
-        f"👤 {sp_name}"
-    )
 
 
 async def _send_reminder(bot, telegram_id: int, text: str, send_at: datetime) -> None:
@@ -60,6 +51,13 @@ IKP_MSG = {
     "EN": f"☎️ IKP: {IKP_PHONE_DISPLAY}",
 }
 
+_CALLBACK_PHONE_LINE = {
+    "UA": "\n\nЯкщо у вас термінове питання — зателефонуйте:\n☎️ {phone}",
+    "RU": "\n\nЕсли у вас срочный вопрос — позвоните напрямую:\n☎️ {phone}",
+    "CZ": "\n\nPokud máte naléhavou záležitost, zavolejte:\n☎️ {phone}",
+    "EN": "\n\nFor urgent matters, call us directly:\n☎️ {phone}",
+}
+
 
 @router.callback_query(UserFlow.slot_selection, F.data == "call_operator")
 async def cb_call_operator(callback: CallbackQuery, state: FSMContext) -> None:
@@ -83,10 +81,36 @@ async def cb_callback_request(callback: CallbackQuery, state: FSMContext) -> Non
         await callback.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
         pass
-    await callback.message.answer(t(lang, "callback_saved"))
+
+    # Route to operator(s) based on selected category
+    category = data.get("triage_category", "")
+    if category == "cat_consult":
+        operator_ids: int | list[int] = OPERATOR_PSYCHOLOG_ID
+    elif category == "cat_ikp":
+        operator_ids = OPERATOR_IKP_ID
+    else:
+        operator_ids = [OPERATOR_PSYCHOLOG_ID, OPERATOR_IKP_ID]
+
+    asyncio.create_task(
+        notify_operator(
+            callback.bot,
+            operator_ids,
+            data,
+            callback.from_user.id,
+            callback.from_user.username,
+        )
+    )
+
+    # Client confirmation
+    msg = t(lang, "callback_saved")
+    if ORG_PHONE:
+        phone_tmpl = _CALLBACK_PHONE_LINE.get(lang, "\n\n☎️ {phone}")
+        msg += phone_tmpl.format(phone=ORG_PHONE)
+    await callback.message.answer(msg)
+
     await state.clear()
     await callback.answer()
-    logger.info("Callback requested | user_id=%s", db_user_id)
+    logger.info("Callback requested | user_id=%s category=%s", db_user_id, category)
 
 
 @router.callback_query(UserFlow.slot_selection, F.data.startswith("slot_"))

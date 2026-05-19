@@ -57,6 +57,13 @@ ADMIN_IDS: set[int] = {
     int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip().isdigit()
 }
 
+# Operator Telegram IDs for "call me back" notifications
+OPERATOR_PSYCHOLOG_ID: int = int(os.getenv("OPERATOR_PSYCHOLOG_ID", "1075908059"))
+OPERATOR_IKP_ID: int = int(os.getenv("OPERATOR_IKP_ID", "804451651"))
+
+# Organisation phone shown to client after callback request
+ORG_PHONE: str = os.getenv("ORG_PHONE", "")
+
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 if not WEBHOOK_HOST:
