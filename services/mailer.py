@@ -77,7 +77,8 @@ async def send_client_confirmation(
     address: str = "",
     is_online: bool = False,
 ) -> bool:
-    """Send booking confirmation to the client."""
+    # Disabled per GDPR simplification — calendar is source of truth
+    return False
     if not SMTP_USER or not SMTP_PASS:
         return False
     if not client_email:
@@ -175,7 +176,8 @@ async def notify_specialist(
     is_online: bool = False,
     client_age: str = "",
 ) -> bool:
-    """Send booking notification email to the specialist."""
+    # Disabled per GDPR simplification — calendar is source of truth
+    return False
     if not SMTP_USER or not SMTP_PASS:
         logger.warning("SMTP not configured — skipping email notification")
         return False

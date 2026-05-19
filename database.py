@@ -165,6 +165,18 @@ async def create_booking(
     return row["id"]
 
 
+async def get_user_bookings_with_calendar(telegram_id: int) -> list[dict]:
+    """Return bookings for a user with calendar metadata needed for event deletion."""
+    user = await get_user(telegram_id)
+    if not user:
+        return []
+    rows = await pool().fetch(
+        "SELECT id, specialist_id, calendar_event_id FROM bookings WHERE user_id = $1",
+        user["id"],
+    )
+    return [dict(r) for r in rows]
+
+
 async def set_callback_requested(user_id: int) -> None:
     await pool().execute(
         "UPDATE users SET status = 'callback_requested' WHERE id = $1", user_id

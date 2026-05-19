@@ -426,3 +426,50 @@ def create_event_from_window(
     except Exception as exc:
         logger.error("Failed to create event for %s: %s", window.specialist_name, exc)
         return None
+
+
+def _delete_calendar_event_sync(calendar_id: str, event_id: str) -> bool:
+    """Delete a single Google Calendar event. Returns True if deleted."""
+    try:
+        service = _build_service()
+        service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
+        logger.info("Deleted calendar event %s from %s", event_id, calendar_id)
+        return True
+    except HttpError as exc:
+        if exc.resp.status in (404, 410):
+            logger.warning("Calendar event %s not found (already deleted)", event_id)
+            return False
+        logger.error("HttpError deleting event %s: %s", event_id, exc)
+        return False
+    except Exception as exc:
+        logger.error("Failed to delete event %s: %s", event_id, exc)
+        return False
+
+
+async def delete_user_calendar_events(bookings: list[dict]) -> int:
+    """
+    Delete all Google Calendar events for a user's bookings.
+    Returns the number of events successfully deleted.
+    specialist_id in each booking row IS the Google Calendar ID.
+    """
+    import asyncio
+
+    if not bookings:
+        return 0
+
+    def _sync_delete_all() -> int:
+        count = 0
+        for b in bookings:
+            event_id = b.get("calendar_event_id")
+            cal_id = b.get("specialist_id")  # specialist_id stores the calendar_id
+            if event_id and cal_id:
+                if _delete_calendar_event_sync(cal_id, event_id):
+                    count += 1
+            elif event_id and not cal_id:
+                logger.warning(
+                    "No calendar_id for booking %s — skipping event deletion",
+                    b.get("id"),
+                )
+        return count
+
+    return await asyncio.get_event_loop().run_in_executor(None, _sync_delete_all)

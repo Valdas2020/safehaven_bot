@@ -11,7 +11,6 @@ from aiogram.types import CallbackQuery, Message
 from config import OPERATOR_IKP_ID, OPERATOR_PSYCHOLOG_ID, ORG_PHONE, SPECIALIST_TG_IDS
 from models import BookingWindow
 from services.calendar import create_event_from_window
-from services.mailer import notify_specialist, send_client_confirmation
 from services.operator_notify import notify_operator
 from states.user_states import UserFlow
 from utils.i18n import t
@@ -171,40 +170,6 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     booking_id = await db.create_booking(
         db_user_id, window.calendar_id, start, end, event_id
     )
-
-    # Email notification to specialist
-    description = data.get("triage_description", "—")
-    age_years = data.get("age_years", "")
-    logger.info(
-        "notify_specialist | specialist=%s email=%s",
-        window.specialist_name,
-        window.specialist_email,
-    )
-    await notify_specialist(
-        specialist_email=window.specialist_email or window.calendar_id,
-        specialist_name=window.specialist_name,
-        client_name=name,
-        client_description=description,
-        start=start,
-        end=end,
-        address=window.address or "",
-        is_online=window.is_online,
-        client_age=str(age_years) if age_years else "",
-    )
-
-    # Client confirmation email
-    client_email = data.get("email", "")
-    if client_email:
-        await send_client_confirmation(
-            client_email=client_email,
-            client_name=name,
-            specialist_name=window.specialist_name,
-            start=start,
-            end=client_end,
-            lang=lang,
-            address=window.address or "",
-            is_online=window.is_online,
-        )
 
     # Telegram confirmation
     try:
