@@ -181,9 +181,6 @@ async def msg_phone(message: Message, state: FSMContext) -> None:
 async def _go_to_triage(message, lang: str, state: FSMContext) -> None:
     from keyboards.inline import triage_keyboard as _triage_kb
 
-    await message.answer(
-        t(lang, "triage_prompt"),
-        reply_markup=_triage_kb(lang),
-        parse_mode="Markdown",
-    )
+    text = t(lang, "triage_prompt") + "\n\n" + t(lang, "ikp_description")
+    await message.answer(text, reply_markup=_triage_kb(lang))
     await state.set_state(UserFlow.triage_choice)

@@ -45,7 +45,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_in_person": "Особисто",
         "cat_crisis": "🆘 Криза",
         "cat_consult": "🧠 Психолог",
-        "cat_ikp": "🤝 Допомога / ІКП",
+        "cat_ikp": "🤝 Допомога / ІКП *",
         "btn_accept": "✅ Погоджуюсь",
         "btn_decline": "❌ Відмовляюсь",
         "btn_callback": "📞 Передзвоніть мені",
@@ -76,7 +76,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
         "ikp_description": (
-            "ℹ️ Послуги інтеркультурних працівників: допомога із записом до лікаря, "
+            "* Послуги інтеркультурних працівників: допомога із записом до лікаря, "
             "супровід до медичних закладів, підтримка у спілкуванні з установами, "
             "оформлення медичної документації та переклад."
         ),
@@ -125,7 +125,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_in_person": "Лично",
         "cat_crisis": "🆘 Кризис",
         "cat_consult": "🧠 Психолог",
-        "cat_ikp": "🤝 Помощь / ИКП",
+        "cat_ikp": "🤝 Помощь / ИКП *",
         "btn_accept": "✅ Соглашаюсь",
         "btn_decline": "❌ Отказываюсь",
         "btn_callback": "📞 Перезвоните мне",
@@ -156,7 +156,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
         "ikp_description": (
-            "ℹ️ Услуги интеркультурных работников: помощь в записи к врачу, "
+            "* Услуги интеркультурных работников: помощь в записи к врачу, "
             "сопровождение в медицинские учреждения, поддержка в общении с организациями, "
             "оформление медицинской документации и перевод."
         ),
@@ -205,7 +205,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_in_person": "Osobně",
         "cat_crisis": "🆘 Krize",
         "cat_consult": "🧠 Psycholog",
-        "cat_ikp": "🤝 Pomoc / IKP",
+        "cat_ikp": "🤝 Pomoc / IKP *",
         "btn_accept": "✅ Souhlasím",
         "btn_decline": "❌ Odmítám",
         "btn_callback": "📞 Zavolejte mi zpět",
@@ -236,7 +236,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
         "ikp_description": (
-            "ℹ️ Služby interkulturních pracovníků: pomoc s objednáním k lékaři, "
+            "* Služby interkulturních pracovníků: pomoc s objednáním k lékaři, "
             "doprovod do zdravotnických zařízení, podpora při komunikaci s institucemi, "
             "vyřízení zdravotnické dokumentace a tlumočení."
         ),
@@ -285,7 +285,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "format_in_person": "In-person",
         "cat_crisis": "🆘 Crisis",
         "cat_consult": "🧠 Psychologist",
-        "cat_ikp": "🤝 Assistance / IKP",
+        "cat_ikp": "🤝 Assistance / IKP *",
         "btn_accept": "✅ I agree",
         "btn_decline": "❌ I decline",
         "btn_callback": "📞 Please call me back",
@@ -316,7 +316,7 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
         "ikp_description": (
-            "ℹ️ Intercultural worker services: help with booking medical appointments, "
+            "* Intercultural worker services: help with booking medical appointments, "
             "accompaniment to healthcare facilities, support in communicating with institutions, "
             "assistance with medical documentation and translation."
         ),

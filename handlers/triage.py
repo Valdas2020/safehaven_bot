@@ -71,9 +71,6 @@ async def _handle_triage_result(
         await state.clear()
         return
 
-    if category == "cat_ikp":
-        await answer_fn(t(lang, "ikp_description"))
-
     await state.update_data(
         triage_description=description,
         triage_category=category,
