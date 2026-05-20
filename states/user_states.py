@@ -14,7 +14,6 @@ class UserFlow(StatesGroup):
     intake_location = State()
     intake_email = State()
     intake_phone = State()
-    intake_contact_method = State()
     intake_protection = State()
     intake_prague = State()
     triage_choice = State()

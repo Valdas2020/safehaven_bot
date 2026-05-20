@@ -75,6 +75,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_viber": "💜 Viber",
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
+        "ikp_description": (
+            "ℹ️ Послуги інтеркультурних працівників: допомога із записом до лікаря, "
+            "супровід до медичних закладів, підтримка у спілкуванні з установами, "
+            "оформлення медичної документації та переклад."
+        ),
     },
     "RU": {
         "lang_prompt": "Добро пожаловать! 👋\nВыберите язык:",
@@ -150,6 +155,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_viber": "💜 Viber",
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
+        "ikp_description": (
+            "ℹ️ Услуги интеркультурных работников: помощь в записи к врачу, "
+            "сопровождение в медицинские учреждения, поддержка в общении с организациями, "
+            "оформление медицинской документации и перевод."
+        ),
     },
     "CZ": {
         "lang_prompt": "Vítejte! 👋\nVyberte jazyk:",
@@ -225,6 +235,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_viber": "💜 Viber",
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
+        "ikp_description": (
+            "ℹ️ Služby interkulturních pracovníků: pomoc s objednáním k lékaři, "
+            "doprovod do zdravotnických zařízení, podpora při komunikaci s institucemi, "
+            "vyřízení zdravotnické dokumentace a tlumočení."
+        ),
     },
     "EN": {
         "lang_prompt": "Welcome! 👋\nSelect your language:",
@@ -300,6 +315,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "contact_viber": "💜 Viber",
         "contact_whatsapp": "💚 WhatsApp",
         "contact_telegram": "✈️ Telegram",
+        "ikp_description": (
+            "ℹ️ Intercultural worker services: help with booking medical appointments, "
+            "accompaniment to healthcare facilities, support in communicating with institutions, "
+            "assistance with medical documentation and translation."
+        ),
     },
 }
 

@@ -71,6 +71,9 @@ async def _handle_triage_result(
         await state.clear()
         return
 
+    if category == "cat_ikp":
+        await answer_fn(t(lang, "ikp_description"))
+
     await state.update_data(
         triage_description=description,
         triage_category=category,
@@ -85,7 +88,7 @@ async def _handle_triage_result(
 
 @router.callback_query(
     UserFlow.triage_choice,
-    F.data.in_({"cat_crisis", "cat_consult", "cat_ikp"}),
+    F.data.in_({"cat_consult", "cat_ikp"}),
 )
 async def cb_category(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()

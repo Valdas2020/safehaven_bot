@@ -8,7 +8,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from keyboards.inline import (
     age_keyboard,
-    contact_method_keyboard,
     yes_no_keyboard,
 )
 from states.user_states import UserFlow
@@ -156,7 +155,7 @@ async def msg_email(message: Message, state: FSMContext) -> None:
     await state.set_state(UserFlow.intake_phone)
 
 
-# ── Step 7: Phone (required) ──────────────────────────────────────────────────
+# ── Step 6: Phone (required) → triage ────────────────────────────────────────
 
 
 @router.message(UserFlow.intake_phone)
@@ -172,35 +171,8 @@ async def msg_phone(message: Message, state: FSMContext) -> None:
     await state.update_data(phone=phone[:32])
     await db.upsert_user(message.from_user.id, phone=phone[:32])
 
-    await message.answer(
-        t(lang, "intake_contact_method"), reply_markup=contact_method_keyboard(lang)
-    )
-    await state.set_state(UserFlow.intake_contact_method)
-
-
-# ── Step 8: Contact method → triage ──────────────────────────────────────────
-
-
-@router.callback_query(
-    UserFlow.intake_contact_method,
-    F.data.in_({"cm_phone", "cm_telegram", "skip"}),
-)
-async def cb_contact_method(callback: CallbackQuery, state: FSMContext) -> None:
-    data = await state.get_data()
-    lang = data["lang"]
-
-    if callback.data != "skip":
-        cm = callback.data[3:]  # strip "cm_"
-        await state.update_data(contact_method=cm)
-        await db.upsert_user(callback.from_user.id, contact_method=cm)
-
-    try:
-        await callback.message.edit_reply_markup(reply_markup=None)
-    except TelegramBadRequest:
-        pass
-    await _go_to_triage(callback.message, lang, state)
-    await callback.answer()
-    logger.info("user_id=%s completed intake", callback.from_user.id)
+    await _go_to_triage(message, lang, state)
+    logger.info("user_id=%s completed intake", message.from_user.id)
 
 
 # ── Helper ────────────────────────────────────────────────────────────────────

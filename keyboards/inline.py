@@ -154,11 +154,6 @@ def triage_keyboard(lang: str) -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=t(lang, "cat_crisis"), callback_data="cat_crisis"
-                )
-            ],
-            [
-                InlineKeyboardButton(
                     text=t(lang, "cat_consult"), callback_data="cat_consult"
                 )
             ],
