@@ -11,7 +11,7 @@ from aiogram.types import CallbackQuery, Message
 from config import OPERATOR_IKP_ID, OPERATOR_PSYCHOLOG_ID, ORG_PHONE, SPECIALIST_TG_IDS
 from models import BookingWindow
 from services.calendar import create_event_from_window
-from services.operator_notify import notify_operator
+from services.operator_notify import notify_operator, send_booking_notification
 from states.user_states import UserFlow
 from utils.i18n import t
 
@@ -169,6 +169,28 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     # Save booking to DB (calendar_id is the specialist key)
     booking_id = await db.create_booking(
         db_user_id, window.calendar_id, start, end, event_id
+    )
+
+    # Operator booking notification
+    asyncio.create_task(
+        send_booking_notification(
+            callback.bot,
+            {
+                "name": data.get("name"),
+                "age_years": data.get("age_years"),
+                "age_cat": data.get("age_cat"),
+                "email": data.get("email"),
+                "phone": data.get("phone"),
+                "triage_category": data.get("triage_category"),
+                "specialist_name": window.specialist_name,
+                "date_str": window.date.strftime("%d.%m.%Y"),
+                "time_str": f"{window.start.strftime('%H:%M')}–{window.display_end.strftime('%H:%M')}",
+                "is_online": window.is_online,
+                "address": window.address,
+                "telegram_username": callback.from_user.username,
+                "telegram_id": callback.from_user.id,
+            },
+        )
     )
 
     # Telegram confirmation
