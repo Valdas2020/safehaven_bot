@@ -63,7 +63,7 @@ async def _handle_triage_result(
     windows = await get_windows_for_category(
         sheet_cat,
         today,
-        today + timedelta(days=14),
+        today + timedelta(days=21),
         SPREADSHEET_ID,
         SCHEDULE_SHEET_TAB,
         limit=3,
