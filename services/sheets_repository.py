@@ -451,13 +451,23 @@ async def get_windows_for_calendars(
 
 
 def _rows_for_category(
-    sheet_category: str,
+    sheet_category: str | list[str],
     date_from: date,
     date_to: date,
     spreadsheet_id: str,
     sheet_tab: str,
 ) -> list[BookingWindow]:
-    """Parse all sheet rows whose Kategorie matches sheet_category (case-insensitive)."""
+    """Parse all sheet rows whose Kategorie matches sheet_category (case-insensitive).
+
+    sheet_category may be a single string or a list of strings (OR logic).
+    """
+    if isinstance(sheet_category, list):
+        cats_lower = {c.lower() for c in sheet_category}
+        cat_label = str(sheet_category)
+    else:
+        cats_lower = {sheet_category.lower()}
+        cat_label = sheet_category
+
     rows = load_rows(spreadsheet_id, sheet_tab)
     result: list[BookingWindow] = []
 
@@ -465,13 +475,13 @@ def _rows_for_category(
     unique_cats = sorted({str(r.get("Kategorie", "")).strip() for r in rows} - {""})
     logger.info(
         "Searching category=%r in %d rows (date %s–%s). Unique Kategorie values: %s",
-        sheet_category, len(rows), date_from, date_to, unique_cats,
+        cat_label, len(rows), date_from, date_to, unique_cats,
     )
     n_cat = n_date = n_slot = n_no_cal = 0
 
     for row in rows:
         row_cat = str(row.get("Kategorie", "")).strip()
-        if row_cat.lower() != sheet_category.lower():
+        if row_cat.lower() not in cats_lower:
             n_cat += 1
             continue
 
@@ -536,13 +546,13 @@ def _rows_for_category(
     result.sort(key=lambda w: (w.date, w.start))
     logger.info(
         "_rows_for_category(%r): %d windows found | skipped: %d wrong-cat, %d wrong-date, %d bad-slot, %d no-cal",
-        sheet_category, len(result), n_cat, n_date, n_slot, n_no_cal,
+        cat_label, len(result), n_cat, n_date, n_slot, n_no_cal,
     )
     return result
 
 
 async def get_windows_for_category(
-    sheet_category: str,
+    sheet_category: str | list[str],
     date_from: date,
     date_to: date,
     spreadsheet_id: str,
