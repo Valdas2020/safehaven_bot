@@ -20,7 +20,7 @@ router = Router(name="triage")
 # For child psychologists: include both the age-specific and the generic category
 # so that slots are found regardless of whether the sheet has been fully updated.
 _SHEET_CATEGORY: dict[str, dict[str, str | list[str]]] = {
-    "cat_consult": {"child": ["Psycholog (děti)", "Psycholog"], "adult": "Psycholog"},
+    "cat_consult": {"child": "Psycholog (děti)", "adult": "Psycholog"},
     "cat_ikp": {"child": "IKP", "adult": "IKP"},
 }
 
@@ -49,7 +49,7 @@ async def _handle_triage_result(
     sheet_cat = _SHEET_CATEGORY.get(category, {}).get(age_cat)
     if not sheet_cat:
         # free_text or unknown category — fall back to age-appropriate psychologist
-        sheet_cat = ["Psycholog (děti)", "Psycholog"] if age_cat == "child" else "Psycholog"
+        sheet_cat = "Psycholog (děti)" if age_cat == "child" else "Psycholog"
 
     logger.info(
         "Slot search | age=%s triage=%s category=%s sheet_cat=%s",
