@@ -18,7 +18,7 @@ router = Router(name="triage")
 
 # Maps (bot category, age_cat) → exact "Kategorie" column value in Google Sheets
 _SHEET_CATEGORY: dict[str, dict[str, str]] = {
-    "cat_consult": {"child": "Psycholog (děti)", "adult": "Psycholog"},
+    "cat_consult": {"child": "Psycholog", "adult": "Psycholog"},
     "cat_ikp": {"child": "IKP", "adult": "IKP"},
 }
 
