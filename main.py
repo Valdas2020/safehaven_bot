@@ -67,6 +67,18 @@ dp.include_router(fallback.router)  # must be last
 # ── FastAPI app ───────────────────────────────────────────────────────────────
 
 
+async def _daily_cleanup_loop(bot: Bot) -> None:
+    """Run GDPR inactive-user cleanup once every 24 hours."""
+    from services.cleanup_service import delete_inactive_users
+
+    while True:
+        await asyncio.sleep(24 * 3600)
+        try:
+            await delete_inactive_users(bot)
+        except Exception as exc:
+            logger.error("Daily cleanup error: %s", exc)
+
+
 async def _reschedule_pending_notifications() -> None:
     """On startup: re-create asyncio tasks for all bookings that still need a post-visit prompt."""
     from services.calendar import SPECIALISTS
@@ -99,6 +111,7 @@ async def lifespan(app: FastAPI):
     )
     logger.info("Webhook set: %s", WEBHOOK_URL)
     await _reschedule_pending_notifications()
+    asyncio.create_task(_daily_cleanup_loop(bot))
     yield
     # NOTE: do NOT delete_webhook on shutdown — Render rolling restarts would
     # clear the webhook before the new instance registers it.

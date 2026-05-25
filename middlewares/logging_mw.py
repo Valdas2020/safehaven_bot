@@ -1,6 +1,8 @@
+import asyncio
 import logging
 from typing import Any, Awaitable, Callable
 
+import database as db
 from aiogram import BaseMiddleware
 from aiogram.types import TelegramObject, Update
 
@@ -30,5 +32,6 @@ class LoggingMiddleware(BaseMiddleware):
                     user.username or "none",
                     event.event_type,
                 )
+                asyncio.create_task(db.touch_activity(user.id))
 
         return await handler(event, data)

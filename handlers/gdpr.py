@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
@@ -36,7 +37,11 @@ async def cb_gdpr_accept(callback: CallbackQuery, state: FSMContext) -> None:
     data = await state.get_data()
     lang = data["lang"]
 
-    await db.upsert_user(callback.from_user.id, gdpr_accepted=True)
+    await db.upsert_user(
+        callback.from_user.id,
+        gdpr_accepted=True,
+        accepted_at=datetime.now(timezone.utc),
+    )
 
     await callback.message.edit_text(
         t(lang, "intake_prague"),

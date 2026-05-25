@@ -42,6 +42,8 @@ async def init_db() -> None:
             ("phone", "TEXT"),
             ("contact_method", "TEXT"),
             ("age_years", "INT"),
+            ("accepted_at", "TIMESTAMPTZ"),
+            ("last_activity_at", "TIMESTAMPTZ"),
         ]:
             await conn.execute(f"""
                 DO $$ BEGIN
@@ -49,6 +51,11 @@ async def init_db() -> None:
                 EXCEPTION WHEN duplicate_column THEN NULL;
                 END $$;
             """)
+        # One-time backfill: existing consented users get accepted_at = NOW()
+        await conn.execute("""
+            UPDATE users SET accepted_at = NOW()
+            WHERE gdpr_accepted = TRUE AND accepted_at IS NULL
+        """)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS cases (
                 id                      BIGSERIAL PRIMARY KEY,
@@ -205,6 +212,30 @@ async def delete_user_data(telegram_id: int) -> bool:
         await conn.execute("DELETE FROM users WHERE id = $1", user_id)
     logger.info("GDPR erasure: deleted all data for telegram_id=%s", telegram_id)
     return True
+
+
+async def touch_activity(telegram_id: int) -> None:
+    """Update last_activity_at for an existing user (no-op if user not found)."""
+    await pool().execute(
+        "UPDATE users SET last_activity_at = NOW() WHERE telegram_id = $1",
+        telegram_id,
+    )
+
+
+async def get_inactive_users(days: int = 30) -> list[dict]:
+    """Return users with GDPR consent who have been inactive for >= days."""
+    rows = await pool().fetch(
+        """
+        SELECT telegram_id FROM users
+        WHERE gdpr_accepted = TRUE
+          AND (
+              last_activity_at < NOW() - $1 * INTERVAL '1 day'
+              OR (last_activity_at IS NULL AND created_at < NOW() - $1 * INTERVAL '1 day')
+          )
+        """,
+        days,
+    )
+    return [dict(r) for r in rows]
 
 
 async def create_post_visit(
