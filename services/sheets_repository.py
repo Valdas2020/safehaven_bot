@@ -75,11 +75,17 @@ def _parse_date(raw: str) -> Optional[date]:
 
 def _parse_slot(raw: str) -> Optional[tuple[time, time]]:
     cleaned = re.sub(r"\s+", "", raw)
+    # Normalise dash variants (en-dash U+2013, em-dash U+2014, figure dash U+2012)
+    cleaned = cleaned.replace("–", "-").replace("—", "-").replace("‒", "-")
     if not cleaned or cleaned in ("-", "volno", "off"):
         return None
     m = _SLOT_RE.match(cleaned)
     if not m:
-        logger.warning("Cannot parse Otevírací doba: %r — skipping row", raw)
+        bad_chars = " ".join(f"U+{ord(c):04X}" for c in cleaned if not c.isdigit() and c not in ":−-")
+        logger.warning(
+            "Cannot parse Otevírací doba: %r (cleaned=%r, non-standard chars: %s) — skipping row",
+            raw, cleaned, bad_chars or "none",
+        )
         return None
     h1, m1, h2, m2 = map(int, m.groups())
     try:
@@ -210,6 +216,7 @@ def _apply_freebusy(
 
     # Drop slots that are in the past or less than 6 hours from now
     min_start_utc = datetime.now(timezone.utc) + timedelta(hours=6)
+    before = len(windows)
     windows = [
         w
         for w in windows
@@ -218,6 +225,10 @@ def _apply_freebusy(
         .astimezone(timezone.utc)
         >= min_start_utc
     ]
+    logger.info(
+        "_apply_freebusy: %d→%d after 6h lead-time filter (min_start=%s UTC)",
+        before, len(windows), min_start_utc.strftime("%Y-%m-%d %H:%M"),
+    )
     if not windows:
         return []
 
@@ -292,6 +303,10 @@ def _apply_freebusy(
         ):
             available.append(w)
 
+    logger.info(
+        "_apply_freebusy: %d/%d slots available after freebusy filter",
+        len(available), len(windows),
+    )
     # Primary: earliest datetime; secondary: fewer sessions today
     available.sort(
         key=lambda w: (
@@ -446,19 +461,30 @@ def _rows_for_category(
     rows = load_rows(spreadsheet_id, sheet_tab)
     result: list[BookingWindow] = []
 
+    # Diagnostic: show unique category values on first call per category
+    unique_cats = sorted({str(r.get("Kategorie", "")).strip() for r in rows} - {""})
+    logger.info(
+        "Searching category=%r in %d rows (date %s–%s). Unique Kategorie values: %s",
+        sheet_category, len(rows), date_from, date_to, unique_cats,
+    )
+    n_cat = n_date = n_slot = n_no_cal = 0
+
     for row in rows:
         row_cat = str(row.get("Kategorie", "")).strip()
         if row_cat.lower() != sheet_category.lower():
+            n_cat += 1
             continue
 
         raw_date = str(row.get("Data", "")).strip()
         d = _parse_date(raw_date)
         if d is None or not (date_from <= d <= date_to):
+            n_date += 1
             continue
 
         raw_slot = str(row.get("Otevírací doba", "")).strip()
         parsed = _parse_slot(raw_slot)
         if parsed is None:
+            n_slot += 1
             continue
         start_t, end_t = parsed
 
@@ -479,6 +505,7 @@ def _rows_for_category(
 
         if not cal_id:
             logger.warning("Row for %s has no calendar_id — skipping", sp_name)
+            n_no_cal += 1
             continue
         if not sp_email:
             logger.warning(
@@ -487,6 +514,10 @@ def _rows_for_category(
                 cal_id,
             )
 
+        logger.info(
+            "  sheet row OK: %s  %s  %s–%s  cal=%s",
+            sp_name, d, start_t.strftime("%H:%M"), end_t.strftime("%H:%M"), cal_id,
+        )
         result.append(
             BookingWindow(
                 date=d,
@@ -503,6 +534,10 @@ def _rows_for_category(
         )
 
     result.sort(key=lambda w: (w.date, w.start))
+    logger.info(
+        "_rows_for_category(%r): %d windows found | skipped: %d wrong-cat, %d wrong-date, %d bad-slot, %d no-cal",
+        sheet_category, len(result), n_cat, n_date, n_slot, n_no_cal,
+    )
     return result
 
 
