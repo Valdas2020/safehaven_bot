@@ -5,13 +5,13 @@ TEXTS: dict[str, dict[str, str]] = {
         "lang_prompt": "Вітаємо! 👋\nОберіть мову спілкування:",
         "gdpr": (
             "🔒 *Конфіденційність та захист даних*\n\n"
-            "Ми збираємо:\n"
+            "Ми обробляємо, тобто збираємо та зберігаємо:\n"
             "• Ім'я, прізвище, вік, місто\n"
             "• Контактні дані (email, номер телефону)\n"
             "• Опис вашої ситуації — *дані про ментальне здоров'я (ст. 9 GDPR)*\n\n"
-            "Дані використовуються виключно для підбору спеціаліста і *не передаються третім особам*.\n\n"
-            "Ви можете видалити всі свої дані командою /deleteme у будь-який час.\n\n"
-            "Ви надаєте *явну згоду* на обробку даних, включаючи дані про ментальне здоров'я?"
+            "Дані використовуються виключно з метою підбору фахівця і *не передаються третім особам*.\n\n"
+            "Ви можете видалити всі свої дані в будь-який час за допомогою команди /deleteme.\n\n"
+            "Чи даєте ви свою *явну згоду* на обробку даних, включаючи дані про ментальне здоров'я?"
         ),
         "gdpr_decline": "Розуміємо ваш вибір. Якщо передумаєте — надішліть /start 💙",
         "deleteme_confirm": (
@@ -85,13 +85,13 @@ TEXTS: dict[str, dict[str, str]] = {
         "lang_prompt": "Добро пожаловать! 👋\nВыберите язык:",
         "gdpr": (
             "🔒 *Конфиденциальность и защита данных*\n\n"
-            "Мы собираем:\n"
+            "Мы обрабатываем, то есть собираем и храним:\n"
             "• Имя, фамилию, возраст, город\n"
             "• Контактные данные (email, номер телефона)\n"
             "• Описание вашей ситуации — *данные о ментальном здоровье (ст. 9 GDPR)*\n\n"
-            "Данные используются исключительно для подбора специалиста и *не передаются третьим лицам*.\n\n"
-            "Вы можете удалить все свои данные командой /deleteme в любое время.\n\n"
-            "Вы даёте *явное согласие* на обработку данных, включая данные о ментальном здоровье?"
+            "Данные используются исключительно в целях подбора специалиста и *не передаются третьим лицам*.\n\n"
+            "Вы можете удалить все свои данные в любое время с помощью команды /deleteme.\n\n"
+            "Даете ли вы свое *явное согласие* на обработку данных, включая данные о ментальном здоровье?"
         ),
         "gdpr_decline": "Понимаем. Если передумаете — отправьте /start 💙",
         "deleteme_confirm": (
@@ -165,13 +165,13 @@ TEXTS: dict[str, dict[str, str]] = {
         "lang_prompt": "Vítejte! 👋\nVyberte jazyk:",
         "gdpr": (
             "🔒 *Ochrana osobních údajů*\n\n"
-            "Shromažďujeme:\n"
+            "Zpracováváme, tj. shromažďujeme a uchováváme:\n"
             "• Jméno, příjmení, věk, město\n"
-            "• Kontaktní údaje (email, telefonní číslo)\n"
-            "• Popis vaší situace — *údaje o duševním zdraví (čl. 9 GDPR)*\n\n"
-            "Údaje slouží výhradně k přidělení specialisty a *nejsou sdíleny s třetími stranami*.\n\n"
-            "Všechna vaše data můžete kdykoli smazat příkazem /deleteme.\n\n"
-            "Udělujete *výslovný souhlas* se zpracováním údajů včetně údajů o duševním zdraví?"
+            "• Kontaktní údaje (e-mail, telefonní číslo)\n"
+            "• Popis vaší situace – *údaje o duševním zdraví (čl. 9 GDPR)*\n\n"
+            "Údaje se používají výhradně za účelem výběru odborníka a *nejsou předávány třetím stranám*.\n\n"
+            "Všechny své údaje můžete kdykoli smazat pomocí příkazu /deleteme.\n\n"
+            "Dáváte svůj *výslovný souhlas* se zpracováním údajů, včetně údajů o duševním zdraví?"
         ),
         "gdpr_decline": "Rozumíme. Kdykoli napište /start 💙",
         "deleteme_confirm": (
@@ -245,13 +245,13 @@ TEXTS: dict[str, dict[str, str]] = {
         "lang_prompt": "Welcome! 👋\nSelect your language:",
         "gdpr": (
             "🔒 *Privacy & Data Protection*\n\n"
-            "We collect:\n"
-            "• First name, last name, age, city\n"
+            "We process, i.e., collect and store:\n"
+            "• Name, surname, age, city\n"
             "• Contact details (email, phone number)\n"
             "• Description of your situation — *mental health data (Art. 9 GDPR)*\n\n"
-            "Data is used solely to match you with a specialist and *never shared with third parties*.\n\n"
-            "You can delete all your data at any time with /deleteme.\n\n"
-            "Do you give *explicit consent* to process your data, including mental health information?"
+            "The data is used solely for the purpose of matching you with a specialist and *is not shared with third parties*.\n\n"
+            "You can delete all your data at any time using the /deleteme command.\n\n"
+            "Do you give your *explicit consent* to the processing of your data, including mental health data?"
         ),
         "gdpr_decline": "We understand. Send /start whenever you're ready 💙",
         "deleteme_confirm": (
