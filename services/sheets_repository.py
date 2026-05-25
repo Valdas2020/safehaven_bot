@@ -255,7 +255,16 @@ def _apply_freebusy(
             .execute()
         )
         for cal_id in cal_ids:
-            periods = result.get("calendars", {}).get(cal_id, {}).get("busy", [])
+            entry = result.get("calendars", {}).get(cal_id, {})
+            if entry.get("errors"):
+                logger.warning("freebusy errors for %s: %s", cal_id, entry["errors"])
+            periods = entry.get("busy", [])
+            logger.info(
+                "freebusy %s: %d busy period(s): %s",
+                cal_id,
+                len(periods),
+                [(b["start"], b["end"]) for b in periods],
+            )
             busy[cal_id] = [
                 (
                     datetime.fromisoformat(b["start"]).replace(tzinfo=timezone.utc),
