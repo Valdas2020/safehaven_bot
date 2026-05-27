@@ -69,6 +69,8 @@ ORG_PHONE: str = os.getenv("ORG_PHONE", "")
 
 # GDPR auto-cleanup: set to "false" to disable scheduled deletion of inactive users
 CLEANUP_ENABLED: bool = os.getenv("CLEANUP_ENABLED", "true").lower() not in ("false", "0", "no")
+
+if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 if not WEBHOOK_HOST:
     raise RuntimeError("WEBHOOK_HOST is not set")
