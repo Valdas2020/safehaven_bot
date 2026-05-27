@@ -20,6 +20,12 @@ INACTIVE_DAYS = 30
 
 async def delete_inactive_users(bot: Bot) -> None:
     """Find and delete all users inactive for >= INACTIVE_DAYS days."""
+    from config import CLEANUP_ENABLED
+
+    if not CLEANUP_ENABLED:
+        logger.info("Cleanup: skipped (CLEANUP_ENABLED=false)")
+        return
+
     inactive = await db.get_inactive_users(days=INACTIVE_DAYS)
     if not inactive:
         logger.info("Cleanup: no inactive users found (>= %d days)", INACTIVE_DAYS)
@@ -32,7 +38,7 @@ async def delete_inactive_users(bot: Bot) -> None:
         try:
             bookings = await db.get_user_bookings_with_calendar(telegram_id)
             if bookings:
-                await delete_user_calendar_events(bookings)
+                await delete_user_calendar_events(bookings, telegram_id, reason="auto_cleanup")
             await delete_user_from_sheets(telegram_id)
             await db.delete_user_data(telegram_id)
             logger.info(

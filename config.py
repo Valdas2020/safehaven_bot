@@ -67,7 +67,8 @@ OPERATOR_BOOKING_ID: int = int(os.getenv("OPERATOR_BOOKING_ID", "1075908059"))
 # Organisation phone shown to client after callback request
 ORG_PHONE: str = os.getenv("ORG_PHONE", "")
 
-if not BOT_TOKEN:
+# GDPR auto-cleanup: set to "false" to disable scheduled deletion of inactive users
+CLEANUP_ENABLED: bool = os.getenv("CLEANUP_ENABLED", "true").lower() not in ("false", "0", "no")
     raise RuntimeError("BOT_TOKEN is not set")
 if not WEBHOOK_HOST:
     raise RuntimeError("WEBHOOK_HOST is not set")

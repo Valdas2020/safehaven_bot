@@ -60,7 +60,7 @@ async def cmd_deleteme(message: Message, state: FSMContext) -> None:
 
     # 2. Delete Google Calendar events
     if bookings:
-        await delete_user_calendar_events(bookings)
+        await delete_user_calendar_events(bookings, message.from_user.id)
 
     # 3. Delete Google Sheets rows (Sessions_Log)
     await delete_user_from_sheets(message.from_user.id)

@@ -171,6 +171,17 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         db_user_id, window.calendar_id, start, end, event_id
     )
 
+    # Audit trail — record successful event creation
+    await db.write_audit(
+        action="create",
+        reason="user_booking",
+        booking_id=booking_id,
+        user_id=db_user_id,
+        specialist_id=window.calendar_id,
+        calendar_id=window.calendar_id,
+        calendar_event_id=event_id,
+    )
+
     # Operator booking notification
     asyncio.create_task(
         send_booking_notification(

@@ -326,6 +326,7 @@ def create_calendar_event(
         if client_email:
             contact_lines.append(f"Email: {client_email}")
         contact_lines.append(f"Telegram ID: {telegram_id}")
+        contact_lines.append(f"tg:{telegram_id}")  # structured marker for ownership verification
         contact_str = "\n".join(contact_lines)
         session_min = sp.get("display_minutes", SLOT_DISPLAY)
         buffer_min = sp.get("slot_minutes", SLOT_DURATION.seconds // 60) - session_min
@@ -395,6 +396,7 @@ def create_event_from_window(
         if client_email:
             contact_parts.append(f"Email: {client_email}")
         contact_parts.append(f"Telegram ID: {telegram_user_id}")
+        contact_parts.append(f"tg:{telegram_user_id}")  # structured marker for ownership verification
 
         description = (
             "Reachable Booking\n"
@@ -446,30 +448,127 @@ def _delete_calendar_event_sync(calendar_id: str, event_id: str) -> bool:
         return False
 
 
-async def delete_user_calendar_events(bookings: list[dict]) -> int:
+def _verify_event_ownership(
+    cal_id: str, event_id: str, telegram_id: int
+) -> tuple[bool, str]:
+    """
+    Fetch a calendar event and verify it belongs to the given user.
+
+    Returns (ok, reason).
+      ok=True  → event matches telegram_id marker
+      ok=False → mismatch or fetch error (reason explains why)
+    """
+    try:
+        service = _build_service()
+        ev = service.events().get(calendarId=cal_id, eventId=event_id).execute()
+    except HttpError as exc:
+        if exc.resp.status in (404, 410):
+            return False, "event_not_found"
+        return False, f"get_failed:{exc.resp.status}"
+    except Exception as exc:
+        return False, f"get_failed:{exc}"
+
+    desc = ev.get("description") or ""
+    # Check for structured marker (new) or legacy "Telegram ID: N" (old events)
+    tg_marker = f"tg:{telegram_id}"
+    legacy_marker = f"Telegram ID: {telegram_id}"
+    if tg_marker in desc or legacy_marker in desc:
+        return True, "ok"
+
+    return False, "ownership_mismatch"
+
+
+async def delete_user_calendar_events(
+    bookings: list[dict], telegram_id: int, reason: str = "user_deleteme"
+) -> int:
     """
     Delete all Google Calendar events for a user's bookings.
+
+    Before each delete: fetch the event and verify the description contains
+    the Telegram ID marker for this user.  Skips (with ERROR log + audit) if
+    the event does not belong to this user.
+
     Returns the number of events successfully deleted.
     specialist_id in each booking row IS the Google Calendar ID.
     """
     import asyncio
+    import database as db
 
     if not bookings:
         return 0
 
-    def _sync_delete_all() -> int:
-        count = 0
-        for b in bookings:
-            event_id = b.get("calendar_event_id")
-            cal_id = b.get("specialist_id")  # specialist_id stores the calendar_id
-            if event_id and cal_id:
-                if _delete_calendar_event_sync(cal_id, event_id):
-                    count += 1
-            elif event_id and not cal_id:
-                logger.warning(
-                    "No calendar_id for booking %s — skipping event deletion",
-                    b.get("id"),
-                )
-        return count
+    count = 0
+    for b in bookings:
+        event_id = b.get("calendar_event_id")
+        cal_id = b.get("specialist_id")
+        booking_id = b.get("id")
+        user_id = b.get("user_id")
 
-    return await asyncio.get_event_loop().run_in_executor(None, _sync_delete_all)
+        if not event_id or not cal_id:
+            logger.warning(
+                "Missing event_id or cal_id for booking %s — skipping",
+                booking_id,
+            )
+            continue
+
+        # Phase 4 guardrail — verify ownership before deleting
+        ok, verify_reason = await asyncio.get_event_loop().run_in_executor(
+            None, _verify_event_ownership, cal_id, event_id, telegram_id
+        )
+
+        if not ok:
+            logger.error(
+                "OWNERSHIP GUARD: refusing to delete event %s from %s "
+                "for booking_id=%s telegram_id=%s — reason=%s",
+                event_id, cal_id, booking_id, telegram_id, verify_reason,
+            )
+            await db.write_audit(
+                action="delete_blocked",
+                reason=f"ownership_guard:{verify_reason}",
+                booking_id=booking_id,
+                user_id=user_id,
+                specialist_id=cal_id,
+                calendar_id=cal_id,
+                calendar_event_id=event_id,
+                error_message=f"telegram_id={telegram_id} verify_reason={verify_reason}",
+            )
+            continue
+
+        await db.write_audit(
+            action="delete_attempt",
+            reason=reason,
+            booking_id=booking_id,
+            user_id=user_id,
+            specialist_id=cal_id,
+            calendar_id=cal_id,
+            calendar_event_id=event_id,
+        )
+
+        deleted = await asyncio.get_event_loop().run_in_executor(
+            None, _delete_calendar_event_sync, cal_id, event_id
+        )
+
+        if deleted:
+            await db.write_audit(
+                action="delete_success",
+                reason=reason,
+                booking_id=booking_id,
+                user_id=user_id,
+                specialist_id=cal_id,
+                calendar_id=cal_id,
+                calendar_event_id=event_id,
+            )
+            count += 1
+        else:
+            await db.write_audit(
+                action="delete_fail",
+                reason=reason,
+                booking_id=booking_id,
+                user_id=user_id,
+                specialist_id=cal_id,
+                calendar_id=cal_id,
+                calendar_event_id=event_id,
+                error_message="delete returned False",
+            )
+
+    return count

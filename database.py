@@ -90,6 +90,20 @@ async def init_db() -> None:
                 created_at       TIMESTAMPTZ DEFAULT NOW()
             )
         """)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS calendar_event_audit (
+                id                  BIGSERIAL PRIMARY KEY,
+                timestamp           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                action              TEXT NOT NULL,
+                reason              TEXT NOT NULL DEFAULT 'unknown',
+                booking_id          BIGINT,
+                user_id             BIGINT,
+                specialist_id       TEXT,
+                calendar_id         TEXT,
+                calendar_event_id   TEXT,
+                error_message       TEXT
+            )
+        """)
     logger.info("PostgreSQL initialised")
 
 
@@ -178,7 +192,7 @@ async def get_user_bookings_with_calendar(telegram_id: int) -> list[dict]:
     if not user:
         return []
     rows = await pool().fetch(
-        "SELECT id, specialist_id, calendar_event_id FROM bookings WHERE user_id = $1",
+        "SELECT id, user_id, specialist_id, calendar_event_id FROM bookings WHERE user_id = $1",
         user["id"],
     )
     return [dict(r) for r in rows]
@@ -288,6 +302,32 @@ async def get_monthly_summary():
         GROUP BY year, month, b.specialist_id, pv.type_of_work
         ORDER BY year DESC, month DESC, b.specialist_id
     """)
+
+
+async def write_audit(
+    action: str,
+    reason: str = "unknown",
+    booking_id: int | None = None,
+    user_id: int | None = None,
+    specialist_id: str | None = None,
+    calendar_id: str | None = None,
+    calendar_event_id: str | None = None,
+    error_message: str | None = None,
+) -> None:
+    """Record a calendar event lifecycle action for forensics."""
+    try:
+        await pool().execute(
+            """
+            INSERT INTO calendar_event_audit
+                (action, reason, booking_id, user_id, specialist_id,
+                 calendar_id, calendar_event_id, error_message)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            """,
+            action, reason, booking_id, user_id, specialist_id,
+            calendar_id, calendar_event_id, error_message,
+        )
+    except Exception as exc:
+        logger.error("Failed to write audit row: %s", exc)
 
 
 async def get_pending_bookings_for_notification():
