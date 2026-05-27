@@ -129,11 +129,11 @@ async def cmd_diag(message: Message) -> None:
                 f"  {status}{marker} | {summary} | {start} | id={eid[:30]}... | updated={updated}"
             )
 
-    # DB forensics
+    # DB forensics — by date windows
     rows = await db.pool().fetch(
         """
         SELECT b.id, b.user_id, b.specialist_id, b.calendar_event_id,
-               b.start_time, b.created_at,
+               b.start_time, b.created_at, b.status,
                u.telegram_id, u.name
         FROM bookings b
         JOIN users u ON u.id = b.user_id
@@ -158,6 +158,45 @@ async def cmd_diag(message: Message) -> None:
             except Exception as exc:
                 err = str(exc)[:100]
                 lines.append(f"    → GET FAILED: {err}")
+
+    # All bookings for this calendar_id (any date)
+    all_rows = await db.pool().fetch(
+        """
+        SELECT b.id, b.user_id, b.specialist_id, b.calendar_event_id,
+               b.start_time, b.created_at, b.status,
+               u.telegram_id, u.name
+        FROM bookings b
+        JOIN users u ON u.id = b.user_id
+        WHERE b.specialist_id = $1
+        ORDER BY b.start_time
+        """,
+        calendar_id,
+    )
+
+    lines.append(f"\n<b>ALL bookings for this cal_id:</b> {len(all_rows)} row(s)")
+    for r in all_rows:
+        eid = r["calendar_event_id"]
+        lines.append(
+            f"  booking_id={r['id']} client={r['name']} tg={r['telegram_id']} "
+            f"start={r['start_time']} event_id={eid[:30] if eid else 'NULL'}..."
+        )
+
+    # Audit table
+    audit_rows = await db.pool().fetch(
+        """
+        SELECT * FROM calendar_event_audit
+        WHERE calendar_id = $1
+        ORDER BY timestamp DESC
+        LIMIT 50
+        """,
+        calendar_id,
+    )
+    lines.append(f"\n<b>Audit log (last 50):</b> {len(audit_rows)} row(s)")
+    for a in audit_rows:
+        lines.append(
+            f"  {a['timestamp']} | {a['action']} | {a['reason']} | "
+            f"booking_id={a['booking_id']} | event_id={(a['calendar_event_id'] or '')[:25]}..."
+        )
 
     result = "\n".join(lines)
     # Telegram limits: split if too long
