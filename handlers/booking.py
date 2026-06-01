@@ -11,6 +11,7 @@ from aiogram.types import CallbackQuery, Message
 from config import OPERATOR_IKP_ID, OPERATOR_PSYCHOLOG_ID, ORG_PHONE, SPECIALIST_TG_IDS
 from models import BookingWindow
 from services.calendar import create_event_from_window
+from services.mailer import send_client_confirmation
 from services.operator_notify import notify_operator, send_booking_notification
 from states.user_states import UserFlow
 from utils.i18n import t
@@ -216,6 +217,22 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     except TelegramBadRequest:
         pass
     await callback.message.answer(window.confirmation_text(lang))
+
+    # Email confirmation to client
+    client_email = data.get("email", "")
+    if client_email:
+        asyncio.create_task(
+            send_client_confirmation(
+                client_email=client_email,
+                client_name=name,
+                specialist_name=window.specialist_name,
+                start=start,
+                end=client_end,
+                lang=lang,
+                address=window.address,
+                is_online=window.is_online,
+            )
+        )
 
     # Reminder 2 hours before session
     reminder_details = (

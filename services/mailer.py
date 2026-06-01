@@ -77,8 +77,6 @@ async def send_client_confirmation(
     address: str = "",
     is_online: bool = False,
 ) -> bool:
-    # Disabled per GDPR simplification — calendar is source of truth
-    return False
     if not SMTP_USER or not SMTP_PASS:
         return False
     if not client_email:
