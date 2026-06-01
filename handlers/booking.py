@@ -118,6 +118,11 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     lang = data["lang"]
     db_user_id = data["db_user_id"]
     name = data.get("name", "User")
+    age_years = data.get("age_years")
+    if age_years is None:
+        db_user = await db.get_user(callback.from_user.id)
+        if db_user:
+            age_years = db_user.get("age_years")
     windows_raw: list[dict] = data.get("windows", [])
 
     try:
@@ -164,6 +169,7 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         client_phone=data.get("phone", ""),
         client_email=data.get("email", ""),
         contact_method=data.get("contact_method", ""),
+        client_age=age_years,
     )
 
     # Save booking to DB (calendar_id is the specialist key)

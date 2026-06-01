@@ -360,6 +360,7 @@ def create_event_from_window(
     client_phone: str = "",
     client_email: str = "",
     contact_method: str = "",
+    client_age: int | None = None,
 ) -> str | None:
     """
     Create a calendar event from a BookingWindow (sheets-based scheduling).
@@ -409,10 +410,11 @@ def create_event_from_window(
             + "\nBooked via: Reachable Bot"
         )
 
+        name_part = client_name or "Reachable Session"
+        if client_name and client_age is not None:
+            name_part = f"{client_name}, {client_age} р."
         event = {
-            "summary": f"Reachable — {client_name}"
-            if client_name
-            else "Reachable Session",
+            "summary": name_part,
             "description": description,
             "location": window.address if not window.is_online else "",
             "start": {"dateTime": start_dt.isoformat(), "timeZone": "Europe/Prague"},
