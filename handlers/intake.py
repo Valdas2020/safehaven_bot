@@ -85,6 +85,10 @@ async def msg_name(message: Message, state: FSMContext) -> None:
     lang = data["lang"]
     name = message.text.strip()[:64]
 
+    if len(name.split()) < 2:
+        await message.answer(t(lang, "intake_name_invalid"))
+        return
+
     await state.update_data(name=name)
     await db.upsert_user(message.from_user.id, name=name)
 

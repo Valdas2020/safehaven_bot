@@ -410,9 +410,12 @@ def create_event_from_window(
             + "\nBooked via: Reachable Bot"
         )
 
-        name_part = client_name or "Reachable Session"
         if client_name and client_age is not None:
-            name_part = f"{client_name}, {client_age} р."
+            name_part = f"Reachable — {client_name}, {client_age} р."
+        elif client_name:
+            name_part = f"Reachable — {client_name}"
+        else:
+            name_part = "Reachable Session"
         event = {
             "summary": name_part,
             "description": description,
