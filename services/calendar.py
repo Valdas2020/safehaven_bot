@@ -95,7 +95,7 @@ SPECIALISTS: dict[str, dict] = {
 
 # Fallback defaults (each specialist overrides via slot_minutes / display_minutes)
 SLOT_DURATION = timedelta(minutes=60)
-SLOT_DISPLAY = 45
+SLOT_DISPLAY = 50
 LOOK_AHEAD_DAYS = 7
 TOP_SLOTS = 4  # 2 regular + 2 crisis
 MIN_LEAD_HOURS = 4  # first slot no sooner than 4h from now

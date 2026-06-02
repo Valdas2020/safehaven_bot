@@ -133,7 +133,7 @@ async def send_client_confirmation(
     <tr><td style="padding: 8px; font-weight: bold;">{lbl["time"]}</td>
         <td style="padding: 8px;">{time_str}</td></tr>
     <tr style="background:#f5f5f5"><td style="padding: 8px; font-weight: bold;">{lbl["duration"]}</td>
-        <td style="padding: 8px;">45 min</td></tr>{location_row}
+        <td style="padding: 8px;">50 min</td></tr>{location_row}
   </table>
   <p style="margin-top: 24px; color: #888; font-size: 13px;">
     Reachable bot — automated notification.
