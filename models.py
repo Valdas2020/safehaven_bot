@@ -5,28 +5,28 @@ from typing import Optional
 CONFIRM_STRINGS: dict[str, dict[str, str]] = {
     "UA": {
         "header": "✅ Сесію заброньовано!",
-        "session": "сесія 45 хв",
+        "session": "сесія 50 хв",
         "online": "💻 Формат: Онлайн",
         "in_person": "📍 Формат: Особисто",
         "address_lbl": "🗺 Адреса:",
     },
     "RU": {
         "header": "✅ Сессия забронирована!",
-        "session": "сессия 45 мин",
+        "session": "сессия 50 мин",
         "online": "💻 Формат: Онлайн",
         "in_person": "📍 Формат: Лично",
         "address_lbl": "🗺 Адрес:",
     },
     "CZ": {
         "header": "✅ Termín zarezervován!",
-        "session": "sezení 45 min",
+        "session": "sezení 50 min",
         "online": "💻 Formát: Online",
         "in_person": "📍 Formát: Osobně",
         "address_lbl": "🗺 Adresa:",
     },
     "EN": {
         "header": "✅ Booking confirmed!",
-        "session": "45-min session",
+        "session": "50-min session",
         "online": "💻 Format: Online session",
         "in_person": "📍 Format: In-person",
         "address_lbl": "🗺 Address:",
