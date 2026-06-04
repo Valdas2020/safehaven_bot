@@ -117,7 +117,7 @@ def _build_booking_message(data: dict) -> str:
         f"🧠 Категория: {category}\n"
         f"👩‍⚕️ Специалист: {specialist}\n\n"
         f"📅 Дата: {date_str}\n"
-        f"⏰ Время: {time_str} (45 мин)\n\n"
+        f"⏰ Время: {time_str} (50 мин)\n\n"
         f"📍 Формат: {fmt}\n"
         f"🏠 Адрес: {addr_line}\n\n"
         f"🔗 Telegram: {tg_user}\n"
