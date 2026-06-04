@@ -162,7 +162,7 @@ def get_specialist_slots(
         slot_mins = (
             datetime.combine(d, end_t) - datetime.combine(d, start_t)
         ).seconds // 60
-        buffer_mins = 15 if slot_mins >= 60 else 0
+        buffer_mins = 10 if slot_mins >= 60 else 0
         display_end_t = (
             datetime.combine(d, start_t) + timedelta(minutes=slot_mins - buffer_mins)
         ).time()
@@ -379,7 +379,7 @@ def _rows_for_calendars(
         slot_mins = (
             datetime.combine(d, end_t) - datetime.combine(d, start_t)
         ).seconds // 60
-        buffer_mins = 15 if slot_mins >= 60 else 0
+        buffer_mins = 10 if slot_mins >= 60 else 0
         display_end_t = (
             datetime.combine(d, start_t) + timedelta(minutes=slot_mins - buffer_mins)
         ).time()
@@ -510,7 +510,7 @@ def _rows_for_category(
         slot_mins = (
             datetime.combine(d, end_t) - datetime.combine(d, start_t)
         ).seconds // 60
-        buffer_mins = 15 if slot_mins >= 60 else 0
+        buffer_mins = 10 if slot_mins >= 60 else 0
         display_end_t = (
             datetime.combine(d, start_t) + timedelta(minutes=slot_mins - buffer_mins)
         ).time()
