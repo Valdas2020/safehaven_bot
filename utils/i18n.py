@@ -34,7 +34,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "🆘 Екстрена: *112*\n\n"
             "_Для запису до спеціаліста надішліть /start_"
         ),
-        "slots_header": "📅 Доступні слоти (сесія 45 хв):",
+        "slots_header": "📅 Доступні слоти (сесія 50 хв):",
         "slot_booked": "✅ Сесію заброньовано!\n{details}",
         "slot_reminder": "⏰ Нагадування: ваша сесія <b>через 2 години</b>.\n\n{details}",
         "slot_callback": "📞 Передзвоніть мені",
@@ -115,7 +115,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "🆘 Экстренная: *112*\n\n"
             "_Для записи к специалисту отправьте /start_"
         ),
-        "slots_header": "📅 Доступные слоты (сессия 45 мин):",
+        "slots_header": "📅 Доступные слоты (сессия 50 мин):",
         "slot_booked": "✅ Сессия забронирована!\n{details}",
         "slot_reminder": "⏰ Напоминание: ваша сессия <b>через 2 часа</b>.\n\n{details}",
         "slot_callback": "📞 Перезвоните мне",
@@ -196,7 +196,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "🆘 Záchranná: *112*\n\n"
             "_Pro objednání ke specialistovi napište /start_"
         ),
-        "slots_header": "📅 Dostupné termíny (sezení 45 min):",
+        "slots_header": "📅 Dostupné termíny (sezení 50 min):",
         "slot_booked": "✅ Termín zarezervován!\n{details}",
         "slot_reminder": "⏰ Připomenutí: vaše sezení <b>za 2 hodiny</b>.\n\n{details}",
         "slot_callback": "📞 Zavolejte mi zpět",
@@ -277,7 +277,7 @@ TEXTS: dict[str, dict[str, str]] = {
             "🆘 Emergency: *112*\n\n"
             "_To book a session with a specialist, send /start_"
         ),
-        "slots_header": "📅 Available slots (45-min session):",
+        "slots_header": "📅 Available slots (50-min session):",
         "slot_booked": "✅ Session booked!\n{details}",
         "slot_reminder": "⏰ Reminder: your session is <b>in 2 hours</b>.\n\n{details}",
         "slot_callback": "📞 Please call me back",
