@@ -24,7 +24,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "intake_age": "Оберіть вікову категорію:",
         "intake_location": "У якому місті / регіоні ви знаходитесь?",
         "intake_format": "Який формат допомоги вам підходить?",
-        "triage_prompt": "Розкажіть коротко про ситуацію або оберіть категорію:",
+        "intake_situation": "Опишіть коротко ситуацію:",
+        "intake_child_first_name": "Введіть ім'я дитини:",
+        "intake_child_last_name": "Введіть прізвище дитини:",
+        "intake_child_name_invalid": "⚠️ Будь ласка, введіть коректне ім'я (мінімум 2 символи).",
+        "triage_prompt": "Оберіть категорію:",
         "triage_sent": "✅ Запит прийнято. Спеціаліст зв'яжеться з вами найближчим часом 💙",
         "triage_urgent": (
             "🚨 *Ми поруч. Ви не самі.*\n\n"
@@ -105,7 +109,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "intake_age": "Выберите возрастную категорию:",
         "intake_location": "В каком городе / регионе вы находитесь?",
         "intake_format": "Какой формат помощи вам подходит?",
-        "triage_prompt": "Опишите кратко ситуацию или выберите категорию:",
+        "intake_situation": "Опишите кратко ситуацию:",
+        "intake_child_first_name": "Введите имя ребёнка:",
+        "intake_child_last_name": "Введите фамилию ребёнка:",
+        "intake_child_name_invalid": "⚠️ Пожалуйста, введите корректное имя (минимум 2 символа).",
+        "triage_prompt": "Выберите категорию:",
         "triage_sent": "✅ Запрос принят. Специалист свяжется с вами в ближайшее время 💙",
         "triage_urgent": (
             "🚨 *Мы рядом. Вы не одни.*\n\n"
@@ -186,7 +194,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "intake_age": "Vyberte věkovou kategorii:",
         "intake_location": "Ve kterém městě / regionu se nacházíte?",
         "intake_format": "Jakou formu pomoci preferujete?",
-        "triage_prompt": "Stručně popište situaci nebo vyberte kategorii:",
+        "intake_situation": "Stručně popište situaci:",
+        "intake_child_first_name": "Zadejte jméno dítěte:",
+        "intake_child_last_name": "Zadejte příjmení dítěte:",
+        "intake_child_name_invalid": "⚠️ Prosím zadejte platné jméno (minimálně 2 znaky).",
+        "triage_prompt": "Vyberte kategorii:",
         "triage_sent": "✅ Požadavek přijat. Specialista vás brzy kontaktuje 💙",
         "triage_urgent": (
             "🚨 *Slyšíme vás. Nejste sami.*\n\n"
@@ -267,7 +279,11 @@ TEXTS: dict[str, dict[str, str]] = {
         "intake_age": "Please select your age category:",
         "intake_location": "Which city / region are you in?",
         "intake_format": "What support format works best for you?",
-        "triage_prompt": "Briefly describe your situation or choose a category:",
+        "intake_situation": "Briefly describe your situation:",
+        "intake_child_first_name": "Enter the child's first name:",
+        "intake_child_last_name": "Enter the child's last name:",
+        "intake_child_name_invalid": "⚠️ Please enter a valid name (at least 2 characters).",
+        "triage_prompt": "Choose a category:",
         "triage_sent": "✅ Request received. A specialist will contact you shortly 💙",
         "triage_urgent": (
             "🚨 *We hear you. You are not alone.*\n\n"

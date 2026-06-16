@@ -135,6 +135,47 @@ async def msg_age_number(message: Message, state: FSMContext) -> None:
     await state.update_data(age_years=age_years)
     await db.upsert_user(message.from_user.id, age_years=age_years)
 
+    data = await state.get_data()
+    if data.get("age_cat") == "child":
+        await message.answer(t(lang, "intake_child_first_name"))
+        await state.set_state(UserFlow.intake_child_first_name)
+    else:
+        await message.answer(t(lang, "intake_email"))
+        await state.set_state(UserFlow.intake_email)
+
+
+# ── Step 4c: Child first name (only when age_cat == "child") ─────────────────
+
+
+@router.message(UserFlow.intake_child_first_name)
+async def msg_child_first_name(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+    first_name = message.text.strip()[:64]
+
+    if len(first_name) < 2:
+        await message.answer(t(lang, "intake_child_name_invalid"))
+        return
+
+    await state.update_data(child_first_name=first_name)
+    await message.answer(t(lang, "intake_child_last_name"))
+    await state.set_state(UserFlow.intake_child_last_name)
+
+
+# ── Step 4d: Child last name ──────────────────────────────────────────────────
+
+
+@router.message(UserFlow.intake_child_last_name)
+async def msg_child_last_name(message: Message, state: FSMContext) -> None:
+    data = await state.get_data()
+    lang = data["lang"]
+    last_name = message.text.strip()[:64]
+
+    if len(last_name) < 2:
+        await message.answer(t(lang, "intake_child_name_invalid"))
+        return
+
+    await state.update_data(child_last_name=last_name)
     await message.answer(t(lang, "intake_email"))
     await state.set_state(UserFlow.intake_email)
 
@@ -183,8 +224,22 @@ async def msg_phone(message: Message, state: FSMContext) -> None:
 
 
 async def _go_to_triage(message, lang: str, state: FSMContext) -> None:
+    await message.answer(t(lang, "intake_situation"))
+    await state.set_state(UserFlow.intake_situation)
+
+
+# ── Situation description → show triage buttons ───────────────────────────────
+
+
+@router.message(UserFlow.intake_situation)
+async def msg_situation(message: Message, state: FSMContext) -> None:
     from keyboards.inline import triage_keyboard as _triage_kb
 
-    text = t(lang, "triage_prompt") + "\n\n" + t(lang, "ikp_description")
-    await message.answer(text, reply_markup=_triage_kb(lang))
+    data = await state.get_data()
+    lang = data["lang"]
+    situation = message.text.strip()[:2000]
+
+    await state.update_data(situation_description=situation)
+    await message.answer(t(lang, "triage_prompt"), reply_markup=_triage_kb(lang))
+    await message.answer(t(lang, "ikp_description"))
     await state.set_state(UserFlow.triage_choice)

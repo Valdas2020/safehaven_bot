@@ -171,6 +171,10 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
         client_email=data.get("email", ""),
         contact_method=data.get("contact_method", ""),
         client_age=age_years,
+        age_cat=data.get("age_cat", "adult"),
+        child_first_name=data.get("child_first_name", ""),
+        child_last_name=data.get("child_last_name", ""),
+        situation_description=data.get("situation_description", ""),
     )
 
     # Save booking to DB (calendar_id is the specialist key)

@@ -361,6 +361,10 @@ def create_event_from_window(
     client_email: str = "",
     contact_method: str = "",
     client_age: int | None = None,
+    age_cat: str = "adult",
+    child_first_name: str = "",
+    child_last_name: str = "",
+    situation_description: str = "",
 ) -> str | None:
     """
     Create a calendar event from a BookingWindow (sheets-based scheduling).
@@ -399,18 +403,29 @@ def create_event_from_window(
         contact_parts.append(f"Telegram ID: {telegram_user_id}")
         contact_parts.append(f"tg:{telegram_user_id}")  # structured marker for ownership verification
 
+        situation_line = f"{situation_description}\n\n" if situation_description else ""
+        child_recorded_line = (
+            f"Записал(а): {client_name}\n" if age_cat == "child" and client_name else ""
+        )
         description = (
-            "Reachable Booking\n"
+            situation_line
+            + "Reachable Booking\n"
             "──────────────────\n"
             f"Specialist: {window.specialist_name}\n"
             f"Category: {window.category}\n"
             f"Format: {fmt_label}\n"
             f"Location: {location_line}\n"
+            + child_recorded_line
             + "\n".join(contact_parts)
             + "\nBooked via: Reachable Bot"
         )
 
-        if client_name and client_age is not None:
+        if age_cat == "child" and child_first_name and child_last_name:
+            if client_age is not None:
+                name_part = f"{child_first_name} {child_last_name}, {client_age} р."
+            else:
+                name_part = f"{child_first_name} {child_last_name}"
+        elif client_name and client_age is not None:
             name_part = f"Reachable — {client_name}, {client_age} р."
         elif client_name:
             name_part = f"Reachable — {client_name}"
