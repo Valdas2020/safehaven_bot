@@ -421,16 +421,13 @@ def create_event_from_window(
         )
 
         if age_cat == "child" and child_first_name and child_last_name:
-            if client_age is not None:
-                name_part = f"{child_first_name} {child_last_name}, {client_age} р."
-            else:
-                name_part = f"{child_first_name} {child_last_name}"
-        elif client_name and client_age is not None:
-            name_part = f"Reachable — {client_name}, {client_age} р."
+            age_str = f", {client_age}" if client_age is not None else ""
+            name_part = f"{child_first_name} {child_last_name}{age_str} - Reachable-1"
         elif client_name:
-            name_part = f"Reachable — {client_name}"
+            age_str = f", {client_age}" if client_age is not None else ""
+            name_part = f"{client_name}{age_str} - Reachable-1"
         else:
-            name_part = "Reachable Session"
+            name_part = "Reachable-1"
         event = {
             "summary": name_part,
             "description": description,
