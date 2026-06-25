@@ -235,6 +235,7 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
                 lang=lang,
                 address=window.address,
                 is_online=window.is_online,
+                is_ikp="IKP" in window.category,
             )
         )
 

@@ -6,6 +6,7 @@ CONFIRM_STRINGS: dict[str, dict[str, str]] = {
     "UA": {
         "header": "✅ Сесію заброньовано!",
         "session": "сесія 50 хв",
+        "ikp_session": "сесія 30 хв",
         "online": "💻 Формат: Онлайн",
         "in_person": "📍 Формат: Особисто",
         "address_lbl": "🗺 Адреса:",
@@ -13,6 +14,7 @@ CONFIRM_STRINGS: dict[str, dict[str, str]] = {
     "RU": {
         "header": "✅ Сессия забронирована!",
         "session": "сессия 50 мин",
+        "ikp_session": "сессия 30 мин",
         "online": "💻 Формат: Онлайн",
         "in_person": "📍 Формат: Лично",
         "address_lbl": "🗺 Адрес:",
@@ -20,6 +22,7 @@ CONFIRM_STRINGS: dict[str, dict[str, str]] = {
     "CZ": {
         "header": "✅ Termín zarezervován!",
         "session": "sezení 50 min",
+        "ikp_session": "sezení 30 min",
         "online": "💻 Formát: Online",
         "in_person": "📍 Formát: Osobně",
         "address_lbl": "🗺 Adresa:",
@@ -27,6 +30,7 @@ CONFIRM_STRINGS: dict[str, dict[str, str]] = {
     "EN": {
         "header": "✅ Booking confirmed!",
         "session": "50-min session",
+        "ikp_session": "30-min session",
         "online": "💻 Format: Online session",
         "in_person": "📍 Format: In-person",
         "address_lbl": "🗺 Address:",
@@ -150,11 +154,12 @@ class BookingWindow:
         month = MONTH_NAMES.get(lang, MONTH_NAMES["EN"])[self.date.month - 1]
         date_str = f"{wd}, {self.date.day} {month} {self.date.year}"
 
+        session_key = "ikp_session" if "IKP" in self.category else "session"
         lines = [
             s["header"],
             "",
             f"📅 {date_str}",
-            f"🕐 {self.start.strftime('%H:%M')}–{self.display_end.strftime('%H:%M')} ({s['session']})",
+            f"🕐 {self.start.strftime('%H:%M')}–{self.display_end.strftime('%H:%M')} ({s[session_key]})",
             f"👤 {self.specialist_name} · {self.category}",
             "",
         ]
