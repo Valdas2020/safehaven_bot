@@ -78,8 +78,9 @@ async def _handle_triage_result(
         triage_category=category,
         windows=[w.to_dict() for w in windows],
     )
+    slots_header_key = "slots_header_ikp" if category == "cat_ikp" else "slots_header"
     await answer_fn(
-        t(lang, "slots_header"),
+        t(lang, slots_header_key),
         reply_markup=windows_keyboard(windows, lang),
     )
     await state.set_state(UserFlow.slot_selection)
