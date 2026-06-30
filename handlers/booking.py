@@ -23,10 +23,31 @@ router = Router(name="booking")
 PRAGUE_TZ = ZoneInfo("Europe/Prague")
 
 
-async def _send_reminder(bot, telegram_id: int, text: str, send_at: datetime) -> None:
+async def _send_reminder(
+    bot, telegram_id: int, text: str, send_at: datetime, booking_id: int | None = None
+) -> None:
     delay = (send_at - datetime.now(timezone.utc)).total_seconds()
     if delay > 0:
         await asyncio.sleep(delay)
+
+    if booking_id is not None:
+        from services.calendar import _event_exists
+        booking = await db.get_booking_by_id(booking_id)
+        if booking:
+            cal_event_id = booking.get("calendar_event_id")
+            cal_id = booking.get("specialist_id")
+            if cal_event_id and cal_id:
+                exists = await asyncio.get_event_loop().run_in_executor(
+                    None, _event_exists, cal_id, cal_event_id
+                )
+                if not exists:
+                    logger.info(
+                        "Reminder skipped — event deleted from calendar "
+                        "(booking_id=%s telegram_id=%s)",
+                        booking_id, telegram_id,
+                    )
+                    return
+
     try:
         await bot.send_message(telegram_id, text, parse_mode="HTML")
         logger.info("Reminder sent to telegram_id=%s", telegram_id)
@@ -249,7 +270,7 @@ async def cb_slot_selected(callback: CallbackQuery, state: FSMContext) -> None:
     reminder_text = t(lang, "slot_reminder").format(details=reminder_details)
     remind_at = start - timedelta(hours=2)
     asyncio.create_task(
-        _send_reminder(callback.bot, callback.from_user.id, reminder_text, remind_at)
+        _send_reminder(callback.bot, callback.from_user.id, reminder_text, remind_at, booking_id=booking_id)
     )
 
     # Post-visit prompt to specialist 15 min after session ends

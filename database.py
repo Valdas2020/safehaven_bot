@@ -186,6 +186,14 @@ async def create_booking(
     return row["id"]
 
 
+async def get_booking_by_id(booking_id: int) -> dict | None:
+    row = await pool().fetchrow(
+        "SELECT id, specialist_id, calendar_event_id FROM bookings WHERE id = $1",
+        booking_id,
+    )
+    return dict(row) if row else None
+
+
 async def get_user_bookings_with_calendar(telegram_id: int) -> list[dict]:
     """Return bookings for a user with calendar metadata needed for event deletion."""
     user = await get_user(telegram_id)

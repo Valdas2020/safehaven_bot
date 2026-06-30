@@ -447,6 +447,22 @@ def create_event_from_window(
         return None
 
 
+def _event_exists(cal_id: str, event_id: str) -> bool:
+    """Return True if the calendar event still exists (not deleted)."""
+    try:
+        service = _build_service()
+        service.events().get(calendarId=cal_id, eventId=event_id).execute()
+        return True
+    except HttpError as exc:
+        if exc.resp.status in (404, 410):
+            return False
+        logger.error("Error checking event existence %s: %s", event_id, exc)
+        return True  # on unexpected error, don't suppress reminder
+    except Exception as exc:
+        logger.error("Error checking event existence %s: %s", event_id, exc)
+        return True
+
+
 def _delete_calendar_event_sync(calendar_id: str, event_id: str) -> bool:
     """Delete a single Google Calendar event. Returns True if deleted."""
     try:
