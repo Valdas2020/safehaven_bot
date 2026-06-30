@@ -67,6 +67,7 @@ async def cb_call_operator(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.message.answer(IKP_MSG.get(lang, IKP_MSG["RU"]))
     else:
         await callback.message.answer(OPERATOR_MSG.get(lang, OPERATOR_MSG["RU"]))
+    await state.clear()
     await callback.answer()
 
 
